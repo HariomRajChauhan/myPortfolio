@@ -66,7 +66,7 @@ const Hero = () => {
                 className="px-6 py-3 border border-purple-400 text-purple-400 font-medium rounded-lg hover:bg-purple-400/10 transition-colors"
               >
                 Contact Me
-              </button>
+              </a>
             </div>
 
             {/* Social Links */}
