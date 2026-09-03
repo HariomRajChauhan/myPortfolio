@@ -2,26 +2,19 @@
 # Dependencies
 node_modules/
 
-# Build outputs
-dist/
-build/
-coverage/
-htmlcov/
-
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
 
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
-*.tmp
-
-# Logs
-*.log
 
 # Python
 __pycache__/
@@ -29,40 +22,8 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
-*.so
-.coverage
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Testing
-.mypy_cache/
-.pytest_cache/
-.nyc_output/
-coverage.xml
-
-# VCS
-.git/
-.hg/
-.svn/
-
-# Browsers
-*.css.map
-*.js.map
-
-# Vite
-!.vite/
-
-# PostCSS
-!.postcssrc
-
-# Tailwind
-!.tailwind.config.js
-
-# Source files (do not ignore)
-!*.jsx
-!*.js
-!*.css
-!*.html
+venv/
+.venv/
+.env
+.env.local
 ```
