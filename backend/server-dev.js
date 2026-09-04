@@ -143,6 +143,11 @@ app.post('/api/resume/download', (req, res) => {
   res.json({ downloadCount: resumeData.downloadCount, filePath: resumeData.filePath });
 });
 
+app.post('/api/resume', (req, res) => {
+  resumeData.downloadCount += 1;
+  res.json({ downloadCount: resumeData.downloadCount, filePath: resumeData.filePath });
+});
+
 // Contact form (log to console)
 app.post('/api/contact', (req, res) => {
   console.log('📩 New contact form submission:', req.body);
@@ -153,6 +158,10 @@ app.post('/api/contact', (req, res) => {
 app.post('/api/visit', (req, res) => {
   visitCount += 1;
   res.json({ message: 'Visit logged', totalVisits: visitCount });
+});
+
+app.get('/api/visit', (req, res) => {
+  res.json({ totalVisits: visitCount });
 });
 
 // Health check
