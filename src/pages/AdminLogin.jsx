@@ -13,7 +13,7 @@ const AdminLogin = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await axios.post('/api/admin/login', { username, password });
+      const response = await axios.post('/api/auth/login', { username, password });
       onLogin(response.data.token);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
