@@ -108,6 +108,8 @@ let certificates = [
   }
 ];
 
+let videos = [];
+
 let contacts = [];
 let visitCount = 0;
 let resumeData = {
@@ -115,6 +117,73 @@ let resumeData = {
   filePath: '/resumes/Hariom_Chauhan_Resume.pdf',
   downloadCount: 0
 };
+
+// Education entries
+let education = [
+  {
+    _id: '1',
+    institution: 'IOE Purwanchal Campus',
+    degree: 'Bachelor of Engineering',
+    field: 'Computer Engineering',
+    startDate: new Date('2021-09-01'),
+    endDate: null,
+    expected: true,
+    description: 'Currently in 3rd year, 2nd part. Roll No. PUR080BCT033',
+    createdAt: new Date()
+  }
+];
+
+// Experience entries
+let experience = [
+  {
+    _id: '1',
+    title: 'Technical Manager',
+    company: 'ACES (Association of Computer Engineering Students)',
+    location: 'Dharan, Nepal',
+    startDate: new Date('2023-01-01'),
+    endDate: null,
+    current: true,
+    description: 'Leading technical initiatives and managing student engineering programs.',
+    achievements: [
+      'Organized multiple technical workshops and hackathons',
+      'Managed team of 15+ volunteers',
+      'Coordinated with industry professionals for guest lectures'
+    ],
+    createdAt: new Date()
+  },
+  {
+    _id: '2',
+    title: 'Graphics Designer',
+    company: 'ACES (Association of Computer Engineering Students)',
+    location: 'Dharan, Nepal',
+    startDate: new Date('2022-01-01'),
+    endDate: new Date('2023-12-31'),
+    current: false,
+    description: 'Created visual content for events and campaigns over 2 years.',
+    achievements: [
+      'Designed 50+ posters, banners, and promotional materials',
+      'Developed brand identity for major campus events',
+      'Mentored junior designers in graphic design principles'
+    ],
+    createdAt: new Date()
+  },
+  {
+    _id: '3',
+    title: 'Graphics Lead',
+    company: 'Taranga: The Wave of Technology',
+    location: 'Nepal',
+    startDate: new Date('2023-06-01'),
+    endDate: new Date('2023-09-30'),
+    current: false,
+    description: 'Led graphics team for national-level technology festival.',
+    achievements: [
+      'Managed graphics for 1000+ participant event',
+      'Created cohesive visual identity across all platforms',
+      'Coordinated with marketing team for campaign rollout'
+    ],
+    createdAt: new Date()
+  }
+];
 
 // Mock admin (in production, this would be in MongoDB)
 let admin = {
@@ -154,9 +223,37 @@ app.get('/api/certificates', (req, res) => {
   res.json(certificates);
 });
 
-// Videos (empty for now)
-app.get('/api/videos', (req, res) => {
-  res.json([]);
+// Videos (protected admin routes)
+app.get('/api/videos', protect, (req, res) => {
+  const sorted = [...videos].sort((a, b) => {
+    if (b.featured !== a.featured) return b.featured - a.featured;
+    return new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0);
+  });
+  res.json(sorted);
+});
+
+app.post('/api/videos', protect, (req, res) => {
+  const newVideo = {
+    _id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  };
+  videos.push(newVideo);
+  res.status(201).json(newVideo);
+});
+
+app.put('/api/videos/:id', protect, (req, res) => {
+  const index = videos.findIndex(v => v._id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: 'Video not found' });
+  }
+  videos[index] = { ...videos[index], ...req.body };
+  res.json(videos[index]);
+});
+
+app.delete('/api/videos/:id', protect, (req, res) => {
+  videos = videos.filter(v => v._id !== req.params.id);
+  res.json({ message: 'Video deleted successfully' });
 });
 
 // Resume
@@ -264,6 +361,64 @@ app.get('/api/admin/analytics', protect, (req, res) => {
     total: visitCount,
     today: Math.floor(visitCount / 10) // Mock today's visits
   });
+});
+
+// Education routes
+app.get('/api/education', protect, (req, res) => {
+  res.json(education);
+});
+
+app.post('/api/education', protect, (req, res) => {
+  const newEdu = {
+    _id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  };
+  education.push(newEdu);
+  res.status(201).json(newEdu);
+});
+
+app.put('/api/education/:id', protect, (req, res) => {
+  const index = education.findIndex(e => e._id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: 'Education not found' });
+  }
+  education[index] = { ...education[index], ...req.body };
+  res.json(education[index]);
+});
+
+app.delete('/api/education/:id', protect, (req, res) => {
+  education = education.filter(e => e._id !== req.params.id);
+  res.json({ message: 'Education deleted successfully' });
+});
+
+// Experience routes
+app.get('/api/experience', protect, (req, res) => {
+  res.json(experience);
+});
+
+app.post('/api/experience', protect, (req, res) => {
+  const newExp = {
+    _id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  };
+  experience.push(newExp);
+  res.status(201).json(newExp);
+});
+
+app.put('/api/experience/:id', protect, (req, res) => {
+  const index = experience.findIndex(e => e._id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: 'Experience not found' });
+  }
+  experience[index] = { ...experience[index], ...req.body };
+  res.json(experience[index]);
+});
+
+app.delete('/api/experience/:id', protect, (req, res) => {
+  experience = experience.filter(e => e._id !== req.params.id);
+  res.json({ message: 'Experience deleted successfully' });
 });
 
 // 404 handler
