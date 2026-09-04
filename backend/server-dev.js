@@ -2,11 +2,14 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 // Load env vars
 dotenv.config();
 
 const app = express();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Middleware
 app.use(cors());
@@ -105,11 +108,34 @@ let certificates = [
   }
 ];
 
+let contacts = [];
 let visitCount = 0;
 let resumeData = {
   fileName: 'Hariom_Chauhan_Resume.pdf',
   filePath: '/resumes/Hariom_Chauhan_Resume.pdf',
   downloadCount: 0
+};
+
+// Mock admin (in production, this would be in MongoDB)
+let admin = {
+  _id: '1',
+  username: 'admin',
+  password: bcrypt.hashSync('admin123', 10)
+};
+
+// Auth middleware for dev
+const protect = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+    // For dev, just check if token exists (not validating signature)
+    req.admin = { id: '1' };
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
 };
 
 // Routes
@@ -148,8 +174,14 @@ app.post('/api/resume', (req, res) => {
   res.json({ downloadCount: resumeData.downloadCount, filePath: resumeData.filePath });
 });
 
-// Contact form (log to console)
+// Contact form (log to console and store)
 app.post('/api/contact', (req, res) => {
+  const newContact = {
+    _id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date()
+  };
+  contacts.push(newContact);
   console.log('📩 New contact form submission:', req.body);
   res.status(201).json({ message: 'Contact form submitted successfully' });
 });
@@ -169,18 +201,69 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Portfolio API is running (development mode)' });
 });
 
-// Auth endpoints (mock)
-app.post('/api/auth/register', (req, res) => {
-  res.status(201).json({ message: 'Admin created successfully (mock)' });
+// Auth endpoints
+app.post('/api/auth/register', async (req, res) => {
+  const { username, password } = req.body;
+  if (admin) {
+    return res.status(400).json({ message: 'Admin already exists' });
+  }
+  admin = {
+    _id: '1',
+    username,
+    password: await bcrypt.hash(password, 10)
+  };
+  res.status(201).json({ message: 'Admin created successfully' });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
-  if (username === 'admin' && password === 'admin123') {
-    res.json({ token: 'mock-jwt-token', username: 'admin' });
-  } else {
-    res.status(401).json({ message: 'Invalid credentials' });
+  if (!admin || username !== admin.username) {
+    return res.status(401).json({ message: 'Invalid credentials' });
   }
+  const isMatch = await bcrypt.compare(password, admin.password);
+  if (!isMatch) {
+    return res.status(401).json({ message: 'Invalid credentials' });
+  }
+  const token = jwt.sign({ id: admin._id }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, username: admin.username });
+});
+
+// Admin routes (protected)
+app.get('/api/admin/contacts', protect, (req, res) => {
+  res.json(contacts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+});
+
+app.delete('/api/admin/contacts/:id', protect, (req, res) => {
+  contacts = contacts.filter(c => c._id !== req.params.id);
+  res.json({ message: 'Contact deleted successfully' });
+});
+
+app.get('/api/admin/projects', protect, (req, res) => {
+  res.json(projects);
+});
+
+app.delete('/api/admin/projects/:id', protect, (req, res) => {
+  projects = projects.filter(p => p._id !== req.params.id);
+  res.json({ message: 'Project deleted successfully' });
+});
+
+app.get('/api/admin/certificates', protect, (req, res) => {
+  res.json(certificates);
+});
+
+app.delete('/api/admin/certificates/:id', protect, (req, res) => {
+  certificates = certificates.filter(c => c._id !== req.params.id);
+  res.json({ message: 'Certificate deleted successfully' });
+});
+
+app.get('/api/admin/analytics', protect, (req, res) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  // For simplicity in dev mode, just return total
+  res.json({
+    total: visitCount,
+    today: Math.floor(visitCount / 10) // Mock today's visits
+  });
 });
 
 // 404 handler
@@ -194,7 +277,9 @@ app.listen(PORT, () => {
   console.log(`✅ Server running in DEVELOPMENT MODE (no database) on port ${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/api/health`);
   console.log(`   Projects: http://localhost:${PORT}/api/projects`);
+  console.log(`   Admin login: POST http://localhost:${PORT}/api/auth/login`);
   console.log(`   ⚠️  Data is stored in memory and will reset on restart`);
+  console.log(`   📝 Default admin: admin / admin123`);
 });
 
 export default app;
