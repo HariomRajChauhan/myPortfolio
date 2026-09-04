@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -23,6 +29,7 @@
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 /* Selection color */
