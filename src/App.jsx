@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 
 // Import all components
@@ -15,8 +15,14 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
 
+// Import pages
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
+
 function App() {
   const [loading, setLoading] = useState(true);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [adminToken, setAdminToken] = useState(null);
 
   // Log visit when app loads
   useEffect(() => {
@@ -31,25 +37,55 @@ function App() {
     };
 
     logVisit();
+
+    // Check for existing admin token
+    const storedToken = localStorage.getItem('adminToken');
+    if (storedToken) {
+      setAdminToken(storedToken);
+      setIsAdminLoggedIn(true);
+    }
   }, []);
+
+  const handleAdminLogin = (token) => {
+    localStorage.setItem('adminToken', token);
+    setAdminToken(token);
+    setIsAdminLoggedIn(true);
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem('adminToken');
+    setAdminToken(null);
+    setIsAdminLoggedIn(false);
+  };
 
   if (loading) return <LoadingSpinner />;
 
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
-        <Header />
-        <main>
-          <Hero />
-          <About />
-          <Skills />
-          <Projects />
-          <Experience />
-          <Education />
-          <Certificates />
-          <Contact />
-        </main>
-        <Footer />
+        <Routes>
+          <Route path="/" element={
+            <>
+              <Header />
+              <main>
+                <Hero />
+                <About />
+                <Skills />
+                <Projects />
+                <Experience />
+                <Education />
+                <Certificates />
+                <Contact />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/admin" element={
+            isAdminLoggedIn 
+              ? <AdminDashboard token={adminToken} onLogout={handleAdminLogout} />
+              : <AdminLogin onLogin={handleAdminLogin} />
+          } />
+        </Routes>
       </div>
     </Router>
   );

@@ -12,6 +12,10 @@ import resumeRoutes from './routes/resume.js';
 import contactRoutes from './routes/contact.js';
 import visitRoutes from './routes/visit.js';
 import authRoutes from './routes/auth.js';
+import adminContactsRoutes from './routes/adminContacts.js';
+import adminProjectsRoutes from './routes/adminProjects.js';
+import adminCertificatesRoutes from './routes/adminCertificates.js';
+import adminAnalyticsRoutes from './routes/adminAnalytics.js';
 
 // Import middleware
 import { protect } from './middleware/auth.js';
@@ -41,6 +45,12 @@ app.use('/api/resume', resumeRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/visit', visitRoutes);
 app.use('/api/auth', authRoutes);
+
+// Admin routes (protected)
+app.use('/api/admin/contacts', adminContactsRoutes);
+app.use('/api/admin/projects', adminProjectsRoutes);
+app.use('/api/admin/certificates', adminCertificatesRoutes);
+app.use('/api/admin/analytics', adminAnalyticsRoutes);
 
 // Protected admin routes example
 app.get('/api/admin/stats', protect, async (req, res) => {

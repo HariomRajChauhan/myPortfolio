@@ -98,9 +98,14 @@ const Footer = () => {
           <p className="text-gray-500 text-sm">
             © {currentYear} Hariom Raj Chauhan. All rights reserved.
           </p>
-          <div className="flex items-center gap-2 text-gray-500 text-sm">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span>{visitCount.toLocaleString()} visits</span>
+          <div className="flex items-center gap-4">
+            <a href="/admin" className="text-gray-600 hover:text-gray-400 text-sm transition-colors">
+              Admin
+            </a>
+            <div className="flex items-center gap-2 text-gray-500 text-sm">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span>{visitCount.toLocaleString()} visits</span>
+            </div>
           </div>
         </div>
 
