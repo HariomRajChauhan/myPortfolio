@@ -339,6 +339,25 @@ app.get('/api/admin/projects', protect, (req, res) => {
   res.json(projects);
 });
 
+app.post('/api/admin/projects', protect, (req, res) => {
+  const newProject = {
+    _id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  };
+  projects.push(newProject);
+  res.status(201).json(newProject);
+});
+
+app.put('/api/admin/projects/:id', protect, (req, res) => {
+  const index = projects.findIndex(p => p._id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: 'Project not found' });
+  }
+  projects[index] = { ...projects[index], ...req.body };
+  res.json(projects[index]);
+});
+
 app.delete('/api/admin/projects/:id', protect, (req, res) => {
   projects = projects.filter(p => p._id !== req.params.id);
   res.json({ message: 'Project deleted successfully' });
@@ -346,6 +365,25 @@ app.delete('/api/admin/projects/:id', protect, (req, res) => {
 
 app.get('/api/admin/certificates', protect, (req, res) => {
   res.json(certificates);
+});
+
+app.post('/api/admin/certificates', protect, (req, res) => {
+  const newCertificate = {
+    _id: Date.now().toString(),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  };
+  certificates.push(newCertificate);
+  res.status(201).json(newCertificate);
+});
+
+app.put('/api/admin/certificates/:id', protect, (req, res) => {
+  const index = certificates.findIndex(c => c._id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: 'Certificate not found' });
+  }
+  certificates[index] = { ...certificates[index], ...req.body };
+  res.json(certificates[index]);
 });
 
 app.delete('/api/admin/certificates/:id', protect, (req, res) => {
