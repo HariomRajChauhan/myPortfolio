@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const educationSchema = new mongoose.Schema({
   institution: {
@@ -25,6 +25,10 @@ const educationSchema = new mongoose.Schema({
     type: Date,
     default: null // null means currently studying
   },
+  expected: {
+    type: Boolean,
+    default: false
+  },
   gpa: {
     type: String,
     default: ''
@@ -41,4 +45,4 @@ const educationSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('Education', educationSchema);
+export default mongoose.model('Education', educationSchema);

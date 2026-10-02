@@ -14,6 +14,12 @@ const videoSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  youtubeId: {
+    type: String,
+    trim: true,
+    unique: true,
+    sparse: true
+  },
   thumbnailUrl: {
     type: String,
     default: null

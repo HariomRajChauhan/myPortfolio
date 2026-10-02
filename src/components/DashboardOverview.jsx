@@ -25,7 +25,7 @@ const DashboardOverview = () => {
       const [projectsRes, certificatesRes, contactsRes, visitsRes] = await Promise.all([
         axios.get(`${API_BASE}/projects`, { headers }),
         axios.get(`${API_BASE}/certificates`, { headers }),
-        axios.get(`${API_BASE}/contacts`, { headers }),
+        axios.get(`${API_BASE}/contact`, { headers }),
         axios.get(`${API_BASE}/visit`, { headers }),
       ]);
 
@@ -98,13 +98,13 @@ const DashboardOverview = () => {
       </div>
 
       {/* Recent Contacts */}
-      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+      <div className="bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-700">
         <h2 className="text-xl font-bold mb-4">Recent Contact Messages</h2>
         {recentContacts.length === 0 ? (
           <p className="text-gray-400 text-center py-8">No contact messages yet</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <table className="w-full min-w-[560px]">
               <thead>
                 <tr className="text-left text-gray-400 border-b border-gray-700">
                   <th className="pb-3 font-medium">Name</th>

@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import Project from '../models/Project.js';
 import Certificate from '../models/Certificate.js';
 import Resume from '../models/Resume.js';
+import Blog from '../models/Blog.js';
+import Community from '../models/Community.js';
+import Contribution from '../models/Contribution.js';
 import connectDB from '../config/db.js';
 
 dotenv.config();
@@ -15,6 +18,9 @@ const seedData = async () => {
     await Project.deleteMany({});
     await Certificate.deleteMany({});
     await Resume.deleteMany({});
+    await Blog.deleteMany({});
+    await Community.deleteMany({});
+    await Contribution.deleteMany({});
 
     console.log('Cleared existing data');
 
@@ -117,6 +123,49 @@ const seedData = async () => {
 
     await Resume.create(resume);
     console.log('✓ Resume seeded');
+
+    await Contribution.insertMany([
+      {
+        title: 'Technical Management at ACES',
+        type: 'Leadership',
+        description: 'Driving technical initiatives for the Association of Computer Engineering Students and helping create practical opportunities for peers.',
+        order: 1,
+      },
+      {
+        title: 'Taranga: The Wave of Technology',
+        type: 'Creative Direction',
+        description: 'Led visual direction for a national-level technology festival, bringing consistency to its event identity and campaign materials.',
+        order: 2,
+      },
+      {
+        title: 'C++ Guidance Workshop',
+        type: 'Teaching',
+        description: 'Prepared a starter-friendly session, slides, and resources to help first-year engineering students begin programming confidently.',
+        order: 3,
+      },
+    ]);
+
+    await Community.insertMany([
+      {
+        name: 'ACES',
+        role: 'Technical Manager',
+        description: 'Association of Computer Engineering Students, focused on creating useful technical and learning experiences on campus.',
+        order: 1,
+      },
+      {
+        name: 'Taranga',
+        role: 'Graphics Lead',
+        description: 'The Wave of Technology, a national-level tech festival where design helped give a large event a clear identity.',
+        order: 2,
+      },
+      {
+        name: 'IOE Purwanchal Campus',
+        role: 'Student and mentor',
+        description: 'The place where coursework, peer learning, workshops, and project collaboration come together.',
+        order: 3,
+      },
+    ]);
+    console.log('✓ Contributions and community seeded');
 
     console.log('\n✅ Database seeded successfully!');
     process.exit(0);

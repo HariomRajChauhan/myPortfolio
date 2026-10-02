@@ -11,7 +11,7 @@ const VideosManager = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    videoUrl: '',
+    youtubeUrl: '',
     thumbnailUrl: '',
     duration: '',
     publishedAt: '',
@@ -42,7 +42,7 @@ const VideosManager = () => {
       setFormData({
         title: video.title,
         description: video.description || '',
-        videoUrl: video.videoUrl || '',
+        youtubeUrl: video.youtubeUrl || '',
         thumbnailUrl: video.thumbnailUrl || '',
         duration: video.duration || '',
         publishedAt: video.publishedAt ? new Date(video.publishedAt).toISOString().split('T')[0] : '',
@@ -53,7 +53,7 @@ const VideosManager = () => {
       setFormData({
         title: '',
         description: '',
-        videoUrl: '',
+        youtubeUrl: '',
         thumbnailUrl: '',
         duration: '',
         publishedAt: '',
@@ -69,7 +69,7 @@ const VideosManager = () => {
     setFormData({
       title: '',
       description: '',
-      videoUrl: '',
+      youtubeUrl: '',
       thumbnailUrl: '',
       duration: '',
       publishedAt: '',
@@ -188,9 +188,9 @@ const VideosManager = () => {
                   {video.duration && (
                     <span className="text-gray-500">⏱️ {video.duration}</span>
                   )}
-                  {video.videoUrl && (
+                  {video.youtubeUrl && (
                     <a
-                      href={video.videoUrl}
+                        href={video.youtubeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-red-400 hover:underline flex items-center"
@@ -243,8 +243,8 @@ const VideosManager = () => {
                 <input
                   type="url"
                   required
-                  value={formData.videoUrl}
-                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                  value={formData.youtubeUrl}
+                  onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
                   placeholder="https://youtube.com/watch?v=..."
                   className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:border-cyan-500"
                 />
@@ -261,7 +261,7 @@ const VideosManager = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Duration</label>
                   <input

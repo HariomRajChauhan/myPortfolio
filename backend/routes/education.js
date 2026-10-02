@@ -1,74 +1,42 @@
-const express = require('express');
+import express from 'express';
+import { body, param } from 'express-validator';
+import Education from '../models/Education.js';
+import { protect } from '../middleware/auth.js';
+import asyncHandler from '../middleware/asyncHandler.js';
+import validate from '../middleware/validate.js';
+
 const router = express.Router();
-const auth = require('../middleware/auth');
-const Education = require('../models/Education');
+const educationValidation = [
+  body('institution').trim().isLength({ min: 2, max: 160 }),
+  body('degree').trim().isLength({ min: 2, max: 160 }),
+  body('field').optional().trim().isLength({ max: 160 }),
+  body('location').optional().trim().isLength({ max: 160 }),
+  body('startDate').isISO8601(),
+  body('endDate').optional({ values: 'falsy' }).isISO8601(),
+  body('expected').optional().isBoolean(),
+  body('gpa').optional().trim().isLength({ max: 32 }),
+  body('description').optional().trim().isLength({ max: 2000 }),
+  body('order').optional().isInt({ min: 0 }),
+];
 
-// Get all education entries
-router.get('/', auth, async (req, res) => {
-  try {
-    const education = await Education.find().sort({ startDate: -1 });
-    res.json(education);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
+router.get('/', asyncHandler(async (req, res) => {
+  res.json(await Education.find().sort({ expected: -1, startDate: -1, order: 1 }));
+}));
 
-// Create new education entry
-router.post('/', auth, async (req, res) => {
-  try {
-    const { institution, degree, field, startDate, endDate, expected, description } = req.body;
-    
-    const education = new Education({
-      institution,
-      degree,
-      field,
-      startDate,
-      endDate,
-      expected,
-      description
-    });
+router.post('/', protect, educationValidation, validate, asyncHandler(async (req, res) => {
+  res.status(201).json(await Education.create(req.body));
+}));
 
-    await education.save();
-    res.status(201).json(education);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
+router.put('/:id', protect, param('id').isMongoId(), educationValidation, validate, asyncHandler(async (req, res) => {
+  const education = await Education.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  if (!education) return res.status(404).json({ message: 'Education entry not found' });
+  res.json(education);
+}));
 
-// Update education entry
-router.put('/:id', auth, async (req, res) => {
-  try {
-    const { institution, degree, field, startDate, endDate, expected, description } = req.body;
-    
-    const education = await Education.findByIdAndUpdate(
-      req.params.id,
-      { institution, degree, field, startDate, endDate, expected, description },
-      { new: true, runValidators: true }
-    );
+router.delete('/:id', protect, param('id').isMongoId(), validate, asyncHandler(async (req, res) => {
+  const education = await Education.findByIdAndDelete(req.params.id);
+  if (!education) return res.status(404).json({ message: 'Education entry not found' });
+  res.status(204).end();
+}));
 
-    if (!education) {
-      return res.status(404).json({ message: 'Education not found' });
-    }
-
-    res.json(education);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Delete education entry
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    const education = await Education.findByIdAndDelete(req.params.id);
-
-    if (!education) {
-      return res.status(404).json({ message: 'Education not found' });
-    }
-
-    res.json({ message: 'Education deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-module.exports = router;
+export default router;

@@ -1,75 +1,42 @@
-const express = require('express');
+import express from 'express';
+import { body, param } from 'express-validator';
+import Experience from '../models/Experience.js';
+import { protect } from '../middleware/auth.js';
+import asyncHandler from '../middleware/asyncHandler.js';
+import validate from '../middleware/validate.js';
+
 const router = express.Router();
-const auth = require('../middleware/auth');
-const Experience = require('../models/Experience');
+const experienceValidation = [
+  body('title').trim().isLength({ min: 2, max: 140 }),
+  body('company').trim().isLength({ min: 2, max: 140 }),
+  body('location').optional().trim().isLength({ max: 140 }),
+  body('startDate').isISO8601(),
+  body('endDate').optional({ values: 'falsy' }).isISO8601(),
+  body('current').optional().isBoolean(),
+  body('description').optional().trim().isLength({ max: 2000 }),
+  body('achievements').optional().isArray({ max: 12 }),
+  body('achievements.*').optional().trim().isLength({ min: 1, max: 240 }),
+  body('order').optional().isInt({ min: 0 }),
+];
 
-// Get all experience entries
-router.get('/', auth, async (req, res) => {
-  try {
-    const experience = await Experience.find().sort({ startDate: -1 });
-    res.json(experience);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
+router.get('/', asyncHandler(async (req, res) => {
+  res.json(await Experience.find().sort({ current: -1, startDate: -1, order: 1 }));
+}));
 
-// Create new experience entry
-router.post('/', auth, async (req, res) => {
-  try {
-    const { title, company, location, startDate, endDate, current, description, achievements } = req.body;
-    
-    const experience = new Experience({
-      title,
-      company,
-      location,
-      startDate,
-      endDate,
-      current,
-      description,
-      achievements
-    });
+router.post('/', protect, experienceValidation, validate, asyncHandler(async (req, res) => {
+  res.status(201).json(await Experience.create(req.body));
+}));
 
-    await experience.save();
-    res.status(201).json(experience);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
+router.put('/:id', protect, param('id').isMongoId(), experienceValidation, validate, asyncHandler(async (req, res) => {
+  const experience = await Experience.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  if (!experience) return res.status(404).json({ message: 'Experience not found' });
+  res.json(experience);
+}));
 
-// Update experience entry
-router.put('/:id', auth, async (req, res) => {
-  try {
-    const { title, company, location, startDate, endDate, current, description, achievements } = req.body;
-    
-    const experience = await Experience.findByIdAndUpdate(
-      req.params.id,
-      { title, company, location, startDate, endDate, current, description, achievements },
-      { new: true, runValidators: true }
-    );
+router.delete('/:id', protect, param('id').isMongoId(), validate, asyncHandler(async (req, res) => {
+  const experience = await Experience.findByIdAndDelete(req.params.id);
+  if (!experience) return res.status(404).json({ message: 'Experience not found' });
+  res.status(204).end();
+}));
 
-    if (!experience) {
-      return res.status(404).json({ message: 'Experience not found' });
-    }
-
-    res.json(experience);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-// Delete experience entry
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    const experience = await Experience.findByIdAndDelete(req.params.id);
-
-    if (!experience) {
-      return res.status(404).json({ message: 'Experience not found' });
-    }
-
-    res.json({ message: 'Experience deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
-module.exports = router;
+export default router;

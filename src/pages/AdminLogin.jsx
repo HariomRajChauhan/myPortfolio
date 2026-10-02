@@ -13,7 +13,7 @@ const AdminLogin = ({ onLogin }) => {
     setError('');
 
     try {
-      const response = await axios.post('/api/auth/login', { username, password });
+      const response = await axios.post('/api/auth/login', { username: username.trim().toLowerCase(), password });
       onLogin(response.data.token);
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
@@ -23,62 +23,55 @@ const AdminLogin = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-4">
-      <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-            Admin Portal
-          </h1>
-          <p className="text-gray-400 mt-2">Hariom Chauhan Portfolio</p>
+    <div className="admin-login-shell">
+      <div className="admin-login-card">
+        <div className="admin-login-header">
+          <h1 className="admin-login-wordmark">Hariom</h1>
+          <div>
+            <p className="admin-login-label">Content Studio</p>
+            <p className="admin-login-subtitle">Secure authentication required</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Username
-            </label>
+        <form onSubmit={handleSubmit} className="admin-login-form">
+          <label className="admin-login-field">
+            <span>Username</span>
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white placeholder-gray-500"
-              placeholder="Enter username"
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
+              placeholder="harry@43"
               required
+              autoComplete="username"
             />
-          </div>
+          </label>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Password
-            </label>
+          <label className="admin-login-field">
+            <span>Password</span>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-white placeholder-gray-500"
-              placeholder="Enter password"
+              placeholder="Enter your password"
               required
+              autoComplete="current-password"
             />
-          </div>
+          </label>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500 rounded-lg p-3 text-red-400 text-sm">
+            <div className="admin-login-error">
               {error}
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Logging in...' : 'Login'}
+          <button type="submit" disabled={loading} className="admin-login-button">
+            {loading ? 'Authenticating...' : 'Sign in'}
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-gray-700 text-center text-xs text-gray-500">
-          <p>Protected area. Authorized personnel only.</p>
-        </div>
+        <p className="admin-login-footer">
+          Admin portal · Portfolio management system
+        </p>
       </div>
     </div>
   );

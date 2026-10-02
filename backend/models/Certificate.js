@@ -18,6 +18,10 @@ const certificateSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  description: {
+    type: String,
+    default: ''
+  },
   imageUrl: {
     type: String,
     default: '/placeholder-certificate.png'

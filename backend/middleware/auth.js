@@ -10,6 +10,10 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
 
       // Verify token
+      if (!process.env.JWT_SECRET) {
+        return res.status(500).json({ message: 'Server authentication is not configured' });
+      }
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Get admin from token
@@ -21,12 +25,11 @@ export const protect = async (req, res, next) => {
 
       next();
     } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
 };

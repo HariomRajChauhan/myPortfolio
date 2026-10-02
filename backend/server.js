@@ -12,10 +12,12 @@ import resumeRoutes from './routes/resume.js';
 import contactRoutes from './routes/contact.js';
 import visitRoutes from './routes/visit.js';
 import authRoutes from './routes/auth.js';
-import adminContactsRoutes from './routes/adminContacts.js';
-import adminProjectsRoutes from './routes/adminProjects.js';
-import adminCertificatesRoutes from './routes/adminCertificates.js';
 import adminAnalyticsRoutes from './routes/adminAnalytics.js';
+import experienceRoutes from './routes/experience.js';
+import educationRoutes from './routes/education.js';
+import contentRoutes from './routes/content.js';
+import githubRoutes from './routes/github.js';
+import imageRoutes from './routes/images.js';
 
 // Import middleware
 import { protect } from './middleware/auth.js';
@@ -23,15 +25,25 @@ import { protect } from './middleware/auth.js';
 // Load env vars
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',')
+  .map((origin) => origin.trim().replace(/\/$/, ''))
+  .filter(Boolean) || [];
+app.use(cors({
+  origin(origin, callback) {
+    const normalizedOrigin = origin?.replace(/\/$/, '');
+    if (!normalizedOrigin || allowedOrigins.length === 0 || allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // Trust proxy for correct IP behind reverse proxy
@@ -45,36 +57,16 @@ app.use('/api/resume', resumeRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/visit', visitRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/experience', experienceRoutes);
+app.use('/api/education', educationRoutes);
+app.use('/api', contentRoutes);
+app.use('/api/github', githubRoutes);
+app.use('/api/images', imageRoutes);
 
-// Admin routes (protected)
-app.use('/api/admin/contacts', adminContactsRoutes);
-app.use('/api/admin/projects', adminProjectsRoutes);
-app.use('/api/admin/certificates', adminCertificatesRoutes);
 app.use('/api/admin/analytics', adminAnalyticsRoutes);
 
-// Protected admin routes example
-app.get('/api/admin/stats', protect, async (req, res) => {
-  // Import models dynamically to avoid circular dependencies
-  const Project = (await import('./models/Project.js')).default;
-  const Certificate = (await import('./models/Certificate.js')).default;
-  const Contact = (await import('./models/Contact.js')).default;
-  const Visit = (await import('./models/Visit.js')).default;
-
-  try {
-    const projectCount = await Project.countDocuments();
-    const certificateCount = await Certificate.countDocuments();
-    const contactCount = await Contact.countDocuments();
-    const visitCount = await Visit.countDocuments();
-
-    res.json({
-      projects: projectCount,
-      certificates: certificateCount,
-      contacts: contactCount,
-      visits: visitCount
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+app.use('/api/admin', protect, (req, res) => {
+  res.status(404).json({ message: 'Admin route not found' });
 });
 
 // Health check
@@ -89,14 +81,25 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
+  if (err.name === 'CastError') return res.status(400).json({ message: 'Invalid resource id' });
+  if (err.code === 11000) return res.status(409).json({ message: 'A record with that value already exists' });
   console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(err.status || 500).json({ message: err.message || 'Something went wrong!' });
 });
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  connectDB()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.error(`Database connection failed: ${error.message}`);
+      process.exit(1);
+    });
+}
 
 export default app;

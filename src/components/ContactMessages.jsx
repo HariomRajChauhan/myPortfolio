@@ -16,7 +16,7 @@ const ContactMessages = () => {
   const fetchContacts = async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await axios.get(`${API_BASE}/contacts`, {
+      const response = await axios.get(`${API_BASE}/contact`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setContacts(response.data.reverse()); // Show newest first
@@ -32,7 +32,7 @@ const ContactMessages = () => {
 
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.delete(`${API_BASE}/contacts/${id}`, {
+      await axios.delete(`${API_BASE}/contact/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchContacts();
@@ -48,7 +48,7 @@ const ContactMessages = () => {
   const handleMarkAsRead = async (id) => {
     try {
       const token = localStorage.getItem('adminToken');
-      await axios.patch(`${API_BASE}/contacts/${id}/read`, {}, {
+      await axios.patch(`${API_BASE}/contact/${id}/status`, { status: 'read' }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchContacts();

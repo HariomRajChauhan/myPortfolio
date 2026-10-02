@@ -1,1 +1,22 @@
-Nothing needs to be added to .gitignore since the changes only include source code files (.js files) and no build artifacts, dependencies, or temporary files.
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Build and tool output
+dist/
+.vite/
+node_modules/.vite/
+
+# Logs and local operating-system files
+*.log
+npm-debug.log*
+*.local
+.DS_Store

@@ -1,41 +1,32 @@
 import express from 'express';
 import Visit from '../models/Visit.js';
+import { protect } from '../middleware/auth.js';
+import asyncHandler from '../middleware/asyncHandler.js';
 
 const router = express.Router();
 
-// POST log visit (public)
-router.post('/', async (req, res) => {
-  try {
-    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
-    const userAgent = req.headers['user-agent'] || 'unknown';
-    const referrer = req.headers['referer'] || req.headers['referrer'] || null;
+router.post('/', asyncHandler(async (req, res) => {
+  const ipAddress = req.ip || 'unknown';
+  const userAgent = req.get('user-agent') || 'unknown';
+  const referrer = req.get('referer') || null;
+  await Visit.create({ ipAddress, userAgent, referrer });
+  res.status(201).json({ success: true });
+}));
 
-    const visit = new Visit({ ipAddress, userAgent, referrer });
-    await visit.save();
+router.get('/', asyncHandler(async (req, res) => {
+  res.json({ count: await Visit.countDocuments() });
+}));
 
-    // Get total visit count
-    const totalVisits = await Visit.countDocuments();
-    res.json({ message: 'Visit logged', totalVisits });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// GET visit stats (protected)
-router.get('/stats', async (req, res) => {
-  try {
-    const totalVisits = await Visit.countDocuments();
-    const uniqueVisitors = await Visit.distinct('ipAddress').then(arr => arr.length);
-    const recentVisits = await Visit.find().sort({ visitedAt: -1 }).limit(10);
-
-    res.json({
-      totalVisits,
-      uniqueVisitors,
-      recentVisits
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.get('/stats', protect, asyncHandler(async (req, res) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const [totalVisits, todayVisits, uniqueVisitors, recentVisits] = await Promise.all([
+    Visit.countDocuments(),
+    Visit.countDocuments({ visitedAt: { $gte: today } }),
+    Visit.distinct('ipAddress').then((addresses) => addresses.length),
+    Visit.find().sort({ visitedAt: -1 }).limit(10).select('-userAgent'),
+  ]);
+  res.json({ totalVisits, todayVisits, uniqueVisitors, recentVisits });
+}));
 
 export default router;

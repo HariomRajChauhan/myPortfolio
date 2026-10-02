@@ -2,22 +2,24 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 
-// Import all components
-import Header from './components/Header';
-import Hero from './components/Hero';
-import About from './components/About';
-import Skills from './components/Skills';
-import Projects from './components/Projects';
-import Experience from './components/Experience';
-import Education from './components/Education';
-import Certificates from './components/Certificates';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
 import LoadingSpinner from './components/LoadingSpinner';
+import SiteLayout from './components/SiteLayout';
+import ScrollToTop from './components/ScrollToTop';
+import { ThemeProvider } from './components/ThemeProvider';
 
-// Import pages
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import Home from './pages/Home';
+import ProjectsPage from './pages/ProjectsPage';
+import ExperiencePage from './pages/ExperiencePage';
+import SkillsPage from './pages/SkillsPage';
+import ContributionsPage from './pages/ContributionsPage';
+import BlogsPage from './pages/BlogsPage';
+import BlogPostPage from './pages/BlogPostPage';
+import CommunityPage from './pages/CommunityPage';
+import ContactPage from './pages/ContactPage';
+import VideosPage from './pages/VideosPage';
+import VideoDetailPage from './pages/VideoDetailPage';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -62,31 +64,29 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white">
+      <ThemeProvider>
+        <ScrollToTop />
         <Routes>
-          <Route path="/" element={
-            <>
-              <Header />
-              <main>
-                <Hero />
-                <About />
-                <Skills />
-                <Projects />
-                <Experience />
-                <Education />
-                <Certificates />
-                <Contact />
-              </main>
-              <Footer />
-            </>
-          } />
+          <Route element={<SiteLayout />}>
+            <Route index element={<Home />} />
+            <Route path="works/projects" element={<ProjectsPage />} />
+            <Route path="works/experience" element={<ExperiencePage />} />
+            <Route path="works/skills" element={<SkillsPage />} />
+            <Route path="works/contributions" element={<ContributionsPage />} />
+            <Route path="blogs" element={<BlogsPage />} />
+            <Route path="blogs/:slug" element={<BlogPostPage />} />
+            <Route path="community" element={<CommunityPage />} />
+            <Route path="videos" element={<VideosPage />} />
+            <Route path="videos/:id" element={<VideoDetailPage />} />
+            <Route path="contact" element={<ContactPage />} />
+          </Route>
           <Route path="/admin" element={
-            isAdminLoggedIn 
+            isAdminLoggedIn
               ? <AdminDashboard token={adminToken} onLogout={handleAdminLogout} />
               : <AdminLogin onLogin={handleAdminLogin} />
           } />
         </Routes>
-      </div>
+      </ThemeProvider>
     </Router>
   );
 }

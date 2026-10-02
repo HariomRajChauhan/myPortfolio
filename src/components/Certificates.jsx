@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 
 const Certificates = () => {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Seed certificates if API returns empty
   const seedCertificates = [
     {
       _id: '1',
       title: 'Software Engineering Project Certification',
       issuer: 'IOE Purwanchal Campus',
       date: '2024',
-      credentialUrl: null, // TODO: Add if available
+      credentialUrl: null,
       description: 'Completion of AI-based Multi-Crop Disease Detection project with full documentation.',
     },
     {
@@ -23,7 +23,6 @@ const Certificates = () => {
       credentialUrl: null,
       description: 'Participated in and assisted with C++ programming workshops for freshmen.',
     },
-    // Add more certificates as needed
   ];
 
   useEffect(() => {
@@ -42,56 +41,63 @@ const Certificates = () => {
         setLoading(false);
       }
     };
-
     fetchCertificates();
   }, []);
 
   if (loading) {
     return (
-      <section id="certificates" className="py-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="animate-pulse text-gray-400">Loading certificates...</div>
+      <section id="certificates" className="section-padding">
+        <div className="container-width text-center">
+          <div className="text-dark-500 font-body text-sm">Loading certificates...</div>
         </div>
       </section>
     );
   }
 
   return (
-    <section id="certificates" className="py-20 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16 animate-fadeInUp">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-              Certificates & Achievements
-            </span>
+    <section id="certificates" className="section-padding relative">
+      <div className="container-width">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6 }}
+          className="mb-16"
+        >
+          <p className="text-accent-primary text-sm font-body font-medium tracking-wider uppercase mb-3">Certificates</p>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-white mb-4">
+            Recognition & achievements
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-cyan-400 to-purple-500 mx-auto rounded-full"></div>
-          <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-            Recognition for technical projects, workshops, and creative contributions
-          </p>
-        </div>
+          <div className="section-divider" />
+        </motion.div>
 
         {certificates.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {certificates.map((cert, index) => (
-              <div
+              <motion.div
                 key={cert._id}
-                className="group bg-gray-800/50 rounded-xl p-6 border border-white/5 hover:border-purple-400/50 transition-all duration-300 hover:transform hover:-translate-y-1 animate-fadeInUp"
-                style={{ animationDelay: `${index * 0.05}s` }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="group glass-card p-5"
               >
                 {/* Certificate Icon */}
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500/20 to-purple-600/20 rounded-lg flex items-center justify-center mb-4 group-hover:from-cyan-500/30 group-hover:to-purple-600/30 transition-colors">
-                  <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                <div className="w-10 h-10 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center mb-4 group-hover:bg-accent-primary/15 transition-colors">
+                  <svg className="w-5 h-5 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
                 </div>
 
                 {/* Content */}
-                <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">{cert.title}</h3>
-                <p className="text-purple-400 text-sm mb-1">{cert.issuer}</p>
-                <p className="text-gray-500 text-xs mb-3">{cert.date}</p>
+                <h3 className="text-sm font-heading font-semibold text-white mb-1.5 line-clamp-2 group-hover:text-accent-primary transition-colors">
+                  {cert.title}
+                </h3>
+                <p className="text-accent-secondary text-xs font-body mb-0.5">{cert.issuer}</p>
+                <p className="text-dark-600 text-[11px] font-body mb-3">{cert.date}</p>
                 {cert.description && (
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">{cert.description}</p>
+                  <p className="text-dark-400 text-xs font-body leading-relaxed mb-4 line-clamp-2">{cert.description}</p>
                 )}
 
                 {/* Credential Link */}
@@ -100,21 +106,25 @@ const Certificates = () => {
                     href={cert.credentialUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs text-accent-primary hover:text-accent-tertiary transition-colors font-body"
                   >
                     View Credential
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                   </a>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">📜</div>
-            <p className="text-gray-400">Certificates will be displayed here as they are added.</p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
+              <svg className="w-7 h-7 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <p className="text-dark-500 text-sm font-body">Certificates will appear here as they are added.</p>
           </div>
         )}
       </div>

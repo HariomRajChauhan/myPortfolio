@@ -12,7 +12,11 @@ const projectSchema = new mongoose.Schema({
   },
   objective: {
     type: String,
-    required: true
+    default: ''
+  },
+  longDescription: {
+    type: String,
+    default: ''
   },
   techStack: [{
     type: String

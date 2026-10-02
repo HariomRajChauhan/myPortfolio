@@ -1,52 +1,37 @@
 import express from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, param } from 'express-validator';
 import Contact from '../models/Contact.js';
+import { protect } from '../middleware/auth.js';
+import asyncHandler from '../middleware/asyncHandler.js';
+import validate from '../middleware/validate.js';
 
 const router = express.Router();
+const contactValidation = [
+  body('name').trim().isLength({ min: 2, max: 100 }),
+  body('email').trim().isEmail().normalizeEmail(),
+  body('subject').trim().isLength({ min: 2, max: 160 }),
+  body('message').trim().isLength({ min: 10, max: 5000 }),
+];
 
-// POST submit contact form (public)
-router.post('/', [
-  body('name').trim().notEmpty().withMessage('Name is required'),
-  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('subject').trim().notEmpty().withMessage('Subject is required'),
-  body('message').trim().notEmpty().withMessage('Message is required')
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+router.post('/', contactValidation, validate, asyncHandler(async (req, res) => {
+  const contact = await Contact.create(req.body);
+  res.status(201).json({ success: true, message: 'Message sent successfully', id: contact.id });
+}));
 
-  try {
-    const { name, email, subject, message } = req.body;
-    const contact = new Contact({ name, email, subject, message });
-    await contact.save();
-    res.status(201).json({ message: 'Contact form submitted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.get('/', protect, asyncHandler(async (req, res) => {
+  res.json(await Contact.find().sort({ createdAt: -1 }));
+}));
 
-// GET all contacts (protected)
-router.get('/', async (req, res) => {
-  try {
-    const contacts = await Contact.find().sort({ createdAt: -1 });
-    res.json(contacts);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.patch('/:id/status', protect, param('id').isMongoId(), body('status').isIn(['new', 'read', 'replied']), validate, asyncHandler(async (req, res) => {
+  const contact = await Contact.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true, runValidators: true });
+  if (!contact) return res.status(404).json({ message: 'Contact not found' });
+  res.json(contact);
+}));
 
-// PUT update contact status (protected)
-router.put('/:id', async (req, res) => {
-  try {
-    const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!contact) {
-      return res.status(404).json({ message: 'Contact not found' });
-    }
-    res.json(contact);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+router.delete('/:id', protect, param('id').isMongoId(), validate, asyncHandler(async (req, res) => {
+  const contact = await Contact.findByIdAndDelete(req.params.id);
+  if (!contact) return res.status(404).json({ message: 'Contact not found' });
+  res.status(204).end();
+}));
 
 export default router;
