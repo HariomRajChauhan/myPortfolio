@@ -46,7 +46,7 @@ const DashboardOverview = () => {
   };
 
   const StatCard = ({ title, value, icon, color }) => (
-    <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all">
+    <div className="bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-gray-600 transition-all">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-gray-400 text-sm mb-1">{title}</p>
@@ -131,7 +131,7 @@ const DashboardOverview = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+      <div className="bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-700">
         <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button className="p-4 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors text-left">

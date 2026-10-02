@@ -159,7 +159,7 @@ const ExperienceManager = () => {
       {/* Experience Timeline */}
       <div className="space-y-4">
         {experiences.map((exp) => (
-          <div key={exp._id} className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all">
+          <div key={exp._id} className="bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-gray-600 transition-all">
             <div className="flex justify-between items-start">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center text-2xl">
@@ -220,14 +220,14 @@ const ExperienceManager = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800">
+            <div className="p-4 sm:p-6 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800">
               <h3 className="text-xl font-bold">
                 {editingExp ? 'Edit Experience' : 'Add New Experience'}
               </h3>
               <button onClick={handleCloseModal} className="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Job Title *</label>
                 <input
@@ -261,7 +261,7 @@ const ExperienceManager = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Start Date</label>
                   <input

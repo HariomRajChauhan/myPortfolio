@@ -1,75 +1,78 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const ImageUploader = ({ value, onChange, label, token }) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(value || '');
+  const [error, setError] = useState('');
+
+  // The parent owns the value: re-syncing on change is what makes the preview
+  // correct when the form is repopulated by "Edit" or reset by section switches.
+  useEffect(() => {
+    setPreview(value || '');
+  }, [value]);
 
   const handleFileSelect = async (event) => {
     const file = event.target.files?.[0];
+    // Allow re-selecting the same file after a failure
+    event.target.value = '';
     if (!file) return;
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+    setError('');
+
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'].includes(file.type)) {
+      setError('Unsupported file type. Use JPEG, PNG, GIF or WebP.');
       return;
     }
 
-    // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size exceeds 5MB limit.');
+      setError('Image is larger than the 5MB limit.');
       return;
     }
 
     setUploading(true);
 
+    const readAsDataUrl = (blob) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => reject(new Error('Could not read the selected file.'));
+        reader.readAsDataURL(blob);
+      });
+
     try {
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const base64Data = e.target.result;
+      const base64Data = await readAsDataUrl(file);
+      const response = await axios.post(
+        '/api/images/upload',
+        {
+          filename: file.name,
+          data: base64Data,
+          contentType: file.type,
+          size: file.size
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
-        // Upload to server
-        const response = await axios.post(
-          '/api/images/upload',
-          {
-            filename: file.name,
-            data: base64Data,
-            contentType: file.type,
-            size: file.size
-          },
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        const imageUrl = response.data.url;
-        setPreview(imageUrl);
-        onChange(imageUrl);
-        setUploading(false);
-      };
-
-      reader.onerror = () => {
-        alert('Failed to read file');
-        setUploading(false);
-      };
-
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert(error.response?.data?.message || 'Failed to upload image');
+      setPreview(response.data.url);
+      onChange(response.data.url);
+    } catch (uploadError) {
+      setError(uploadError.response?.data?.message || 'Upload failed. Please try again.');
+    } finally {
       setUploading(false);
     }
   };
 
   const handleUrlChange = (url) => {
+    setError('');
     setPreview(url);
     onChange(url);
   };
 
   const handleRemove = () => {
     setPreview('');
+    setError('');
     onChange('');
   };
 
@@ -80,11 +83,12 @@ const ImageUploader = ({ value, onChange, label, token }) => {
           type="text"
           value={value || ''}
           onChange={(e) => handleUrlChange(e.target.value)}
-          placeholder="Enter image URL or upload a file"
+          placeholder="Paste an image URL"
           className="image-uploader-url"
+          aria-label="Image URL"
         />
-        <label className="image-uploader-button">
-          {uploading ? 'Uploading...' : 'Upload'}
+        <label className={`image-uploader-button${uploading ? ' is-busy' : ''}`}>
+          {uploading ? 'Uploading…' : 'Upload'}
           <input
             type="file"
             accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
@@ -95,13 +99,19 @@ const ImageUploader = ({ value, onChange, label, token }) => {
         </label>
       </div>
 
+      {error && (
+        <p className="image-uploader-error" role="alert">{error}</p>
+      )}
+
       {preview && (
-        <div className="image-uploader-preview">
-          <img src={preview} alt="Preview" />
-          <button type="button" onClick={handleRemove} className="image-uploader-remove">
-            Remove
-          </button>
-        </div>
+        <figure className="image-uploader-preview">
+          <img src={preview} alt="" />
+          <figcaption className="image-uploader-actions">
+            <button type="button" onClick={handleRemove} className="image-uploader-remove">
+              Remove image
+            </button>
+          </figcaption>
+        </figure>
       )}
 
       <small className="image-uploader-hint">

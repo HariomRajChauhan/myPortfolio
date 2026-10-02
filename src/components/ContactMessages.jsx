@@ -129,7 +129,7 @@ const ContactMessages = () => {
           </div>
           <div className="max-h-[600px] overflow-y-auto">
             {filteredContacts.length === 0 ? (
-              <div className="p-8 text-center text-gray-400">
+              <div className="p-4 sm:p-8 text-center text-gray-400">
                 No messages found
               </div>
             ) : (
@@ -141,7 +141,7 @@ const ContactMessages = () => {
                     selectedContact?._id === contact._id
                       ? 'bg-gray-700'
                       : 'hover:bg-gray-700'
-                  } ${!contact.read ? 'bg-gray-750 border-l-4 border-l-cyan-500' : ''}`}
+                  } ${!contact.read ? 'bg-gray-700/40 border-l-4 border-l-cyan-500' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-1">
                     <h4 className={`font-medium ${!contact.read ? 'text-white' : 'text-gray-300'}`}>
@@ -166,18 +166,18 @@ const ContactMessages = () => {
         <div className="lg:col-span-2 bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
           {selectedContact ? (
             <>
-              <div className="p-6 border-b border-gray-700 flex justify-between items-start">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">{selectedContact.subject}</h3>
-                  <div className="flex items-center space-x-4 text-sm">
+              <div className="p-4 sm:p-6 border-b border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2 break-words">{selectedContact.subject}</h3>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                     <span className="text-cyan-400">From: {selectedContact.name}</span>
-                    <span className="text-gray-400">&lt;{selectedContact.email}&gt;</span>
+                    <span className="text-gray-400 break-all">&lt;{selectedContact.email}&gt;</span>
                     <span className="text-gray-500">
                       {new Date(selectedContact.createdAt).toLocaleString()}
                     </span>
                   </div>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-2 flex-shrink-0">
                   {!selectedContact.read && (
                     <button
                       onClick={() => handleMarkAsRead(selectedContact._id)}
@@ -200,7 +200,7 @@ const ContactMessages = () => {
                   </button>
                 </div>
               </div>
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
                   {selectedContact.message}
                 </p>

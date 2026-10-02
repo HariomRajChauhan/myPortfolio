@@ -17,6 +17,16 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [adminName, setAdminName] = useState('Admin');
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!sidebarOpen) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [sidebarOpen]);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -71,35 +81,53 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-500"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-900">
+        <div className="h-16 w-16 animate-spin rounded-full border-t-2 border-b-2 border-cyan-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex">
-      {/* Sidebar */}
-      <AdminSidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onLogout={handleLogout}
+    <div className="flex min-h-screen bg-gray-900 text-white">
+      {/* Sidebar (drawer on mobile, static rail from lg up) */}
+      <AdminSidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         adminName={adminName}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
-        <header className="bg-gray-800 border-b border-gray-700 px-8 py-4 sticky top-0 z-10">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
+        <header className="sticky top-0 z-30 border-b border-gray-700 bg-gray-800 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+              aria-controls="admin-sidebar"
+              aria-expanded={sidebarOpen}
+              className="-ml-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-gray-300 transition-colors hover:bg-gray-700 hover:text-white lg:hidden"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            </button>
+
+            <h1 className="min-w-0 flex-1 truncate text-lg font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent sm:text-2xl">
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Management
             </h1>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-400">Welcome, {adminName}</span>
+
+            <div className="flex shrink-0 items-center gap-3">
+              <span className="hidden max-w-[10rem] truncate text-sm text-gray-400 md:inline">
+                Welcome, {adminName}
+              </span>
               <button
+                type="button"
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors text-sm font-medium"
+                className="rounded-lg bg-red-600 px-3 py-2 text-sm font-medium transition-colors hover:bg-red-700 sm:px-4"
               >
                 Logout
               </button>
@@ -108,7 +136,7 @@ const AdminDashboard = () => {
         </header>
 
         {/* Content Area */}
-        <main className="p-8">
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
           {renderContent()}
         </main>
       </div>

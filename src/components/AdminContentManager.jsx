@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import MarkdownEditor from './MarkdownEditor';
 import ImageUploader from './ImageUploader';
@@ -94,6 +94,14 @@ const collectionConfig = {
   },
 };
 
+// Full class names are written out literally so Tailwind's scanner can see
+// them; building the name from a variable would purge these rules.
+const NOTICE_CLASSES = {
+  info: 'admin-notice',
+  success: 'admin-notice admin-notice--success',
+  error: 'admin-notice admin-notice--error'
+};
+
 const AdminContentManager = ({ token, type }) => {
   const config = collectionConfig[type];
   const [items, setItems] = useState([]);
@@ -102,6 +110,11 @@ const AdminContentManager = ({ token, type }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState('');
+  const [noticeType, setNoticeType] = useState('info');
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const composerRef = useRef(null);
+  const formRef = useRef(null);
   const headers = { Authorization: `Bearer ${token}` };
 
   const loadItems = async () => {
@@ -121,6 +134,10 @@ const AdminContentManager = ({ token, type }) => {
     setForm(config.empty);
     setEditingId(null);
     setNotice('');
+    setNoticeType('info');
+    setPendingDelete(null);
+    // The composer collapses back to its default state between sections
+    setComposerOpen(false);
     loadItems();
   }, [type]);
 
@@ -135,6 +152,8 @@ const AdminContentManager = ({ token, type }) => {
       setForm(config.empty);
       setEditingId(null);
       setNotice(`${editingId ? 'Updated' : 'Created'} successfully.`);
+      setNoticeType('success');
+      setComposerOpen(false);
       await loadItems();
     } catch (error) {
       const data = error.response?.data;
@@ -142,6 +161,7 @@ const AdminContentManager = ({ token, type }) => {
         ? data.errors.map((item) => `${item.field}: ${item.message}`).join(' | ')
         : '';
       setNotice(fieldErrors || data?.message || 'Could not save this item.');
+      setNoticeType('error');
     } finally {
       setSaving(false);
     }
@@ -149,60 +169,167 @@ const AdminContentManager = ({ token, type }) => {
 
   const edit = (item) => {
     setEditingId(item._id);
+    setNotice('');
+    setPendingDelete(null);
     setForm(config.normalizeForForm(item));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setComposerOpen(true);
+    // Bring the composer into view and hand focus to its first input so the
+    // change of context is announced instead of silently scrolling.
+    requestAnimationFrame(() => {
+      formRef.current?.querySelector('input:not([type="checkbox"]), textarea')?.focus();
+    });
+    composerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const resetComposer = () => {
+    setEditingId(null);
+    setPendingDelete(null);
+    setForm(config.empty);
+    setComposerOpen(false);
   };
 
   const remove = async (id) => {
-    if (!window.confirm('Delete this item permanently?')) return;
+    setPendingDelete(null);
+    setNotice('');
     try {
       await axios.delete(`${config.endpoint}/${id}`, { headers });
       if (editingId === id) {
         setEditingId(null);
         setForm(config.empty);
+        setComposerOpen(false);
       }
       setNotice('Deleted successfully.');
+      setNoticeType('success');
       await loadItems();
     } catch (error) {
       setNotice(error.response?.data?.message || 'Could not delete this item.');
+      setNoticeType('error');
     }
+  };
+
+  const imageField = config.fields.find((field) => field.image);
+
+  const resetNotice = () => {
+    if (notice) setNotice('');
   };
 
   return (
     <section className="admin-content-manager">
       <div className="admin-content-heading">
-        <div><p>Database editor</p><h2>{editingId ? `Edit ${config.label.slice(0, -1)}` : `Add ${config.label.slice(0, -1)}`}</h2></div>
-        {editingId && <button type="button" onClick={() => { setEditingId(null); setForm(config.empty); }}>Cancel edit</button>}
+        <div>
+          <p>Database editor</p>
+          <h2>{editingId ? `Edit ${config.label.slice(0, -1)}` : config.label}</h2>
+        </div>
+        {!composerOpen && (
+          <button type="button" className="admin-primary-action" onClick={() => { resetNotice(); setComposerOpen(true); }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" width="16" height="16" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add {config.label.slice(0, -1).toLowerCase()}
+          </button>
+        )}
       </div>
-      <form onSubmit={submit} className="admin-editor-form">
-        {config.fields.map((field) => (
-          <label key={field.name} className={field.large || field.markdown || field.image ? 'admin-field admin-field-wide' : 'admin-field'}>
-            <span>{field.label}{field.required && ' *'}</span>
-            {field.checkbox ? (
-              <input type="checkbox" checked={Boolean(form[field.name])} onChange={(event) => setForm({ ...form, [field.name]: event.target.checked })} />
-            ) : field.markdown ? (
-              <MarkdownEditor value={form[field.name] || ''} onChange={(value) => setForm({ ...form, [field.name]: value })} placeholder="Write your blog content in markdown..." />
-            ) : field.image ? (
-              <ImageUploader value={form[field.name] || ''} onChange={(value) => setForm({ ...form, [field.name]: value })} label={field.hint} token={token} />
-            ) : field.textarea ? (
-              <textarea required={field.required} rows={field.large ? 10 : 4} value={form[field.name] || ''} onChange={(event) => setForm({ ...form, [field.name]: event.target.value })} />
-            ) : (
-              <input required={field.required} type={field.type || 'text'} value={form[field.name] || ''} onChange={(event) => setForm({ ...form, [field.name]: event.target.value })} />
-            )}
-            {field.hint && !field.image && <small>{field.hint}</small>}
-          </label>
-        ))}
-        <button className="admin-save-button" disabled={saving}>{saving ? 'Saving...' : editingId ? 'Update item' : `Publish ${config.label.slice(0, -1)}`}</button>
-      </form>
-      {notice && <p className="admin-notice">{notice}</p>}
+
+      {composerOpen && (
+        <div className="admin-composer" ref={composerRef}>
+          <div className="admin-composer-bar">
+            <h3>{editingId ? `Edit ${config.label.slice(0, -1)}` : `New ${config.label.slice(0, -1)}`}</h3>
+            <button type="button" onClick={resetComposer} aria-label="Close editor">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" width="16" height="16" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={submit} className="admin-editor-form" ref={formRef}>
+            {config.fields.map((field) => (
+              <label
+                key={field.name}
+                className={field.large || field.markdown || field.image ? 'admin-field admin-field-wide' : 'admin-field'}
+              >
+                <span>{field.label}{field.required && ' *'}</span>
+                {field.checkbox ? (
+                  <input type="checkbox" checked={Boolean(form[field.name])} onChange={(event) => setForm({ ...form, [field.name]: event.target.checked })} />
+                ) : field.markdown ? (
+                  <MarkdownEditor value={form[field.name] || ''} onChange={(value) => setForm({ ...form, [field.name]: value })} placeholder="Write your blog content in markdown..." />
+                ) : field.image ? (
+                  <ImageUploader value={form[field.name] || ''} onChange={(value) => setForm({ ...form, [field.name]: value })} label={field.hint} token={token} />
+                ) : field.textarea ? (
+                  <textarea required={field.required} rows={field.large ? 10 : 4} value={form[field.name] || ''} onChange={(event) => setForm({ ...form, [field.name]: event.target.value })} />
+                ) : (
+                  <input required={field.required} type={field.type || 'text'} value={form[field.name] || ''} onChange={(event) => setForm({ ...form, [field.name]: event.target.value })} />
+                )}
+                {field.hint && !field.image && <small>{field.hint}</small>}
+              </label>
+            ))}
+            <button className="admin-save-button" disabled={saving}>
+              {saving ? 'Saving…' : editingId ? 'Update item' : `Publish ${config.label.slice(0, -1)}`}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {notice && (
+        <p
+          className={NOTICE_CLASSES[noticeType] || NOTICE_CLASSES.info}
+          role={noticeType === 'error' ? 'alert' : 'status'}
+        >
+          {notice}
+        </p>
+      )}
+
       <div className="admin-items-list">
-        <div className="admin-content-heading"><div><p>Synced with MongoDB</p><h2>Saved {config.label}</h2></div></div>
-        {loading ? <p>Loading...</p> : items.length === 0 ? <p>No {config.label.toLowerCase()} saved yet.</p> : items.map((item) => (
-          <article key={item._id} className="admin-item-row">
-            <div><h3>{config.itemTitle(item)}</h3><p>{config.itemMeta(item)}</p></div>
-            <div><button type="button" onClick={() => edit(item)}>Edit</button><button type="button" onClick={() => remove(item._id)}>Delete</button></div>
-          </article>
-        ))}
+        <div className="admin-content-heading">
+          <div>
+            <p>Synced with MongoDB</p>
+            <h2>Saved {config.label}</h2>
+          </div>
+          {!loading && items.length > 0 && <p className="admin-count-badge">{items.length} total</p>}
+        </div>
+
+        {loading ? (
+          <div aria-busy="true" aria-live="polite">
+            <span className="sr-only">Loading {config.label.toLowerCase()}…</span>
+            {[0, 1, 2].map((row) => (
+              <div className="admin-item-skeleton" key={row}>
+                <div className="w-1/3" />
+                <div className="w-1/2 mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="admin-empty">
+            <strong>No {config.label.toLowerCase()} saved yet</strong>
+            {composerOpen
+              ? `Use the form above to publish your first ${config.label.slice(0, -1).toLowerCase()}.`
+              : `Tap “Add ${config.label.slice(0, -1).toLowerCase()}” above to publish your first one.`}
+          </div>
+        ) : (
+          items.map((item) => (
+            <article key={item._id} className={`admin-item-row${editingId === item._id ? ' is-editing' : ''}`}>
+              {imageField && item[imageField.name] && (
+                <img className="admin-item-thumb" src={item[imageField.name]} alt="" loading="lazy" />
+              )}
+              <div className="admin-item-body">
+                <h3>{config.itemTitle(item)}</h3>
+                <p>{config.itemMeta(item)}</p>
+              </div>
+              <div className="admin-item-actions">
+                {pendingDelete === item._id ? (
+                  <>
+                    <button type="button" className="admin-confirm-yes" onClick={() => remove(item._id)}>Confirm</button>
+                    <button type="button" onClick={() => setPendingDelete(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" onClick={() => { resetNotice(); edit(item); }}>Edit</button>
+                    <button type="button" onClick={() => { resetNotice(); setPendingDelete(item._id); }}>Delete</button>
+                  </>
+                )}
+              </div>
+            </article>
+          ))
+        )}
       </div>
     </section>
   );

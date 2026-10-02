@@ -8,9 +8,13 @@ const MarkdownEditor = ({ value, onChange, placeholder }) => {
 
   return (
     <div className="markdown-editor">
-      <div className="markdown-editor-tabs">
+      <div className="markdown-editor-tabs" role="tablist" aria-label="Markdown mode">
         <button
           type="button"
+          role="tab"
+          id="md-tab-write"
+          aria-selected={activeTab === 'write'}
+          aria-controls="md-panel-write"
           className={activeTab === 'write' ? 'active' : ''}
           onClick={() => setActiveTab('write')}
         >
@@ -18,6 +22,10 @@ const MarkdownEditor = ({ value, onChange, placeholder }) => {
         </button>
         <button
           type="button"
+          role="tab"
+          id="md-tab-preview"
+          aria-selected={activeTab === 'preview'}
+          aria-controls="md-panel-preview"
           className={activeTab === 'preview' ? 'active' : ''}
           onClick={() => setActiveTab('preview')}
         >
@@ -27,6 +35,9 @@ const MarkdownEditor = ({ value, onChange, placeholder }) => {
 
       {activeTab === 'write' ? (
         <textarea
+          role="tabpanel"
+          id="md-panel-write"
+          aria-labelledby="md-tab-write"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder || 'Write your content in markdown...'}
@@ -34,7 +45,12 @@ const MarkdownEditor = ({ value, onChange, placeholder }) => {
           className="markdown-editor-textarea"
         />
       ) : (
-        <div className="markdown-editor-preview">
+        <div
+          role="tabpanel"
+          id="md-panel-preview"
+          aria-labelledby="md-tab-preview"
+          className="markdown-editor-preview blog-content"
+        >
           {value ? (
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}

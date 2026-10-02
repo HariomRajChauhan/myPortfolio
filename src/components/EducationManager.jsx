@@ -136,7 +136,7 @@ const EducationManager = () => {
       {/* Education List */}
       <div className="space-y-4">
         {education.map((edu) => (
-          <div key={edu._id} className="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all">
+          <div key={edu._id} className="bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-700 hover:border-gray-600 transition-all">
             <div className="flex justify-between items-start">
               <div className="flex items-start space-x-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-2xl">
@@ -186,14 +186,14 @@ const EducationManager = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-gray-800 rounded-xl max-w-lg w-full">
-            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+            <div className="p-4 sm:p-6 border-b border-gray-700 flex justify-between items-center">
               <h3 className="text-xl font-bold">
                 {editingEdu ? 'Edit Education' : 'Add New Education'}
               </h3>
               <button onClick={handleCloseModal} className="text-gray-400 hover:text-white text-2xl">&times;</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Institution *</label>
                 <input

@@ -43,6 +43,11 @@ const AdminLogin = ({ onLogin }) => {
               placeholder="harry@43"
               required
               autoComplete="username"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+              disabled={loading}
+              aria-invalid={Boolean(error)}
             />
           </label>
 
@@ -55,17 +60,19 @@ const AdminLogin = ({ onLogin }) => {
               placeholder="Enter your password"
               required
               autoComplete="current-password"
+              disabled={loading}
+              aria-invalid={Boolean(error)}
             />
           </label>
 
           {error && (
-            <div className="admin-login-error">
+            <div className="admin-login-error" role="alert">
               {error}
             </div>
           )}
 
           <button type="submit" disabled={loading} className="admin-login-button">
-            {loading ? 'Authenticating...' : 'Sign in'}
+            {loading ? 'Authenticating…' : 'Sign in'}
           </button>
         </form>
 
