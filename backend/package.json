@@ -4,24 +4,36 @@
   "description": "Backend API for Hariom Chauhan's portfolio",
   "main": "server.js",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
     "seed": "node scripts/seed.js",
     "dev:no-db": "node server-dev.js",
-    "check": "node --check server.js && node --check routes/content.js && node --check routes/github.js && node --check routes/videos.js && node --check routes/projects.js && node --check routes/contact.js"
+    "check": "node --check server.js && node --check server-dev.js && node --check config/env.js && node --check config/db.js && node --check config/cloudinary.js && node --check middleware/auth.js && node --check models/Image.js && node --check routes/auth.js && node --check routes/images.js && node --check routes/content.js && node --check routes/github.js && node --check routes/videos.js && node --check routes/projects.js && node --check routes/contact.js && node --check routes/experience.js && node --check routes/education.js && node --check routes/certificates.js && node --check routes/resume.js && node --check routes/adminAnalytics.js && node --check routes/visit.js"
   },
-  "keywords": ["portfolio", "api", "express", "mongodb"],
+  "keywords": [
+    "portfolio",
+    "api",
+    "express",
+    "mongodb"
+  ],
   "author": "Hariom Raj Chauhan",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "mongoose": "^8.0.3",
-    "dotenv": "^16.3.1",
-    "cors": "^2.8.5",
-    "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^2.11.0",
+    "compression": "^1.8.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.7.1",
     "express-validator": "^7.0.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.3",
     "morgan": "^1.10.0"
   },
   "devDependencies": {

@@ -1,6 +1,51 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
+// Images are stored as base64 inside MongoDB, which inflates them by roughly
+// a third. Downscaling in the browser keeps the free Atlas quota (512MB) from
+// filling up and keeps uploads small enough to survive the proxy timeout.
+const MAX_DIMENSION = 1600;
+const QUALITY = 0.82;
+
+const compressImage = async (file) => {
+  // GIFs may be animated, so rasterising them would destroy frames
+  if (file.type === 'image/gif') return file;
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Could not read that image.'));
+      img.src = objectUrl;
+    });
+
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(image.width, image.height));
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) return file;
+    context.drawImage(image, 0, 0, width, height);
+
+    const blob = await new Promise((resolve) => {
+      canvas.toBlob(resolve, 'image/webp', QUALITY);
+    });
+
+    // A heavily compressed source can come out larger; keep the smaller one
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.webp', { type: 'image/webp' });
+  } catch {
+    // Never block an upload because optimisation failed
+    return file;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+};
+
 const ImageUploader = ({ value, onChange, label, token }) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(value || '');
@@ -41,14 +86,15 @@ const ImageUploader = ({ value, onChange, label, token }) => {
       });
 
     try {
-      const base64Data = await readAsDataUrl(file);
+      const upload = await compressImage(file);
+      const base64Data = await readAsDataUrl(upload);
       const response = await axios.post(
         '/api/images/upload',
         {
-          filename: file.name,
+          filename: upload.name,
           data: base64Data,
-          contentType: file.type,
-          size: file.size
+          contentType: upload.type,
+          size: upload.size
         },
         {
           headers: { Authorization: `Bearer ${token}` }

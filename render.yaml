@@ -1,0 +1,44 @@
+# Render Blueprint for the portfolio API.
+# In the Render dashboard: New + > Blueprint > pick this repo.
+# It reads this file and creates the service. Values marked `sync: false`
+# are secrets you type into the dashboard; they are never committed.
+services:
+  - type: web
+    name: hariom-portfolio-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # MongoDB Atlas connection string (see deployment notes)
+      - key: MONGODB_URI
+        sync: false
+      # Long random string, at least 32 chars
+      - key: JWT_SECRET
+        sync: false
+      # Must match the site origin, otherwise direct browser calls are blocked.
+      # 'https://*.netlify.app' is allowed so Netlify deploy previews work too.
+      - key: CLIENT_ORIGIN
+        value: https://hariomchauhan.com.np,https://www.hariomchauhan.com.np,https://*.netlify.app
+      # Render terminates TLS in front of the app: trust exactly one proxy hop.
+      - key: TRUST_PROXY
+        value: 1
+      # Optional: raises the GitHub API rate limit from 60 to 5,000/hour
+      - key: GITHUB_USERNAME
+        value: HariomRajChauhan
+      - key: GITHUB_TOKEN
+        sync: false
+      # Optional: when all three are set, images go to Cloudinary instead of
+      # being stored as base64 in MongoDB.
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: hariom-portfolio

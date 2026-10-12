@@ -5,6 +5,7 @@ import { body } from 'express-validator';
 import Admin from '../models/Admin.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
+import { config } from '../config/env.js';
 
 const router = express.Router();
 
@@ -66,11 +67,11 @@ router.post('/login', loginValidation, validate, async (req, res) => {
     }
 
     // Generate token
-    if (!process.env.JWT_SECRET) {
+    if (!config.jwtSecret) {
       return res.status(500).json({ message: 'Server authentication is not configured' });
     }
 
-    const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: admin._id }, config.jwtSecret, { expiresIn: '7d' });
 
     res.json({ token, username: admin.username });
   } catch (error) {

@@ -1,7 +1,14 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import morgan from 'morgan';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+
+// Imported first: this loads .env and exits the process on missing config,
+// so nothing below ever runs against a half-configured environment.
+import { config, cloudinaryEnabled, isOriginAllowed } from './config/env.js';
 import connectDB from './config/db.js';
 
 // Import routes
@@ -22,34 +29,73 @@ import imageRoutes from './routes/images.js';
 // Import middleware
 import { protect } from './middleware/auth.js';
 
-// Load env vars
-dotenv.config();
-
 const app = express();
 
-// Middleware
-const allowedOrigins = process.env.CLIENT_ORIGIN?.split(',')
-  .map((origin) => origin.trim().replace(/\/$/, ''))
-  .filter(Boolean) || [];
+// Must be set before the rate limiters read req.ip. Render terminates TLS at a
+// managed proxy, so exactly one hop of X-Forwarded-For is trusted.
+app.set('trust proxy', config.trustProxy);
+
+// Security headers. The API only ever returns JSON or binary images, so the
+// HTML-oriented CSP is disabled; CORP is relaxed so images can be embedded
+// from the Netlify origin.
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
+
+// Gzip JSON responses. Media types that are already compressed are skipped
+// automatically by the compressible check inside this middleware.
+app.use(compression());
+
+// CORS: only the configured site origins may call the API directly. Note that
+// when the frontend goes through the Netlify proxy the request is same-origin
+// and CORS is not involved at all.
 app.use(cors({
   origin(origin, callback) {
-    const normalizedOrigin = origin?.replace(/\/$/, '');
-    if (!normalizedOrigin || allowedOrigins.length === 0 || allowedOrigins.includes(normalizedOrigin)) {
+    if (isOriginAllowed(origin)) {
       return callback(null, true);
     }
-    return callback(new Error('Origin not allowed by CORS'));
+
+    const error = new Error(`Origin ${origin} is not allowed by CORS`);
+    error.status = 403;
+    return callback(error);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Authorization', 'Content-Type'],
+  maxAge: 86400
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(morgan('dev'));
 
-// Trust proxy for correct IP behind reverse proxy
-app.set('trust proxy', true);
+// Concise logs locally, standard combined logs in production for log drains.
+app.use(morgan(config.isProduction ? 'combined' : 'dev'));
+
+// Broad ceiling across the whole API.
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 300,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { message: 'Too many requests. Please try again later.' }
+});
+
+// Brute-force protection for the admin login. Successful requests are not
+// counted, so a legitimate admin is never locked out by their own logins.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { message: 'Too many authentication attempts. Try again in 15 minutes.' }
+});
+
+app.use('/api', apiLimiter);
 
 // Routes
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 app.use('/api/projects', projectRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/videos', videoRoutes);
@@ -69,9 +115,15 @@ app.use('/api/admin', protect, (req, res) => {
   res.status(404).json({ message: 'Admin route not found' });
 });
 
-// Health check
+// Health check. Kept dependency-free so it stays fast when a monitor polls it.
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Portfolio API is running' });
+  res.json({
+    status: 'OK',
+    message: 'Portfolio API is running',
+    environment: process.env.NODE_ENV || 'development',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    imageStorage: cloudinaryEnabled ? 'cloudinary' : 'mongodb'
+  });
 });
 
 // 404 handler
@@ -83,17 +135,52 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   if (err.name === 'CastError') return res.status(400).json({ message: 'Invalid resource id' });
   if (err.code === 11000) return res.status(409).json({ message: 'A record with that value already exists' });
-  console.error(err.stack);
-  res.status(err.status || 500).json({ message: err.message || 'Something went wrong!' });
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      message: 'Validation failed',
+      errors: Object.values(err.errors).map((item) => ({ field: item.path, message: item.message }))
+    });
+  }
+
+  const status = err.status || 500;
+  if (status >= 500) {
+    console.error(err.stack);
+  }
+
+  res.status(status).json({
+    message: status >= 500 && config.isProduction ? 'Something went wrong!' : err.message
+  });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = config.port;
 
 if (process.env.NODE_ENV !== 'test') {
   connectDB()
     .then(() => {
-      app.listen(PORT, () => {
+      const server = app.listen(PORT, () => {
         console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+        console.log(`Image storage: ${cloudinaryEnabled ? 'Cloudinary' : 'MongoDB (base64)'}`);
+      });
+
+      // Render sends SIGTERM on redeploy and when a free service spins down.
+      // Draining in-flight requests avoids dropped responses during deploys.
+      const shutdown = (signal) => {
+        console.log(`${signal} received, shutting down gracefully...`);
+        server.close(async () => {
+          try {
+            await mongoose.connection.close();
+          } catch (error) {
+            console.error(`Error closing MongoDB connection: ${error.message}`);
+          }
+          process.exit(0);
+        });
+
+        // Never hang a deploy if a connection refuses to drain.
+        setTimeout(() => process.exit(1), 10000).unref();
+      };
+
+      ['SIGTERM', 'SIGINT'].forEach((signal) => {
+        process.on(signal, () => shutdown(signal));
       });
     })
     .catch((error) => {
@@ -101,5 +188,14 @@ if (process.env.NODE_ENV !== 'test') {
       process.exit(1);
     });
 }
+
+process.on('unhandledRejection', (reason) => {
+  console.error(`Unhandled rejection: ${reason instanceof Error ? reason.stack : reason}`);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error(`Uncaught exception: ${error.stack || error.message}`);
+  process.exit(1);
+});
 
 export default app;

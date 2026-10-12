@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
+import { config } from '../config/env.js';
 
 export const protect = async (req, res, next) => {
   let token;
@@ -10,11 +11,11 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
 
       // Verify token
-      if (!process.env.JWT_SECRET) {
+      if (!config.jwtSecret) {
         return res.status(500).json({ message: 'Server authentication is not configured' });
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, config.jwtSecret);
 
       // Get admin from token
       req.admin = await Admin.findById(decoded.id).select('-password');
