@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminContentManager from '../components/AdminContentManager';
+import ThemeToggle from '../components/ThemeToggle';
 
 const sections = [
   { id: 'projects', label: 'Projects', icon: 'M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4' },
@@ -108,6 +109,7 @@ const AdminDashboard = ({ token, onLogout }) => {
         <Link to="/" className="admin-wordmark">Hariom</Link>
         <div>
           <span>{active ? active.label : 'Content studio'}</span>
+          <ThemeToggle className="admin-theme-toggle" />
           <button type="button" onClick={onLogout}>Sign out</button>
         </div>
       </header>

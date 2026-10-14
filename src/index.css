@@ -849,6 +849,28 @@
     background: var(--surface-soft);
   }
 
+  /* Square icon button in the topbar; overrides the generic header button sizing */
+  .admin-header button.admin-theme-toggle {
+    @apply grid place-items-center rounded-lg shrink-0 px-0 transition-colors;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+  }
+
+  .admin-header button.admin-theme-toggle:hover {
+    color: var(--accent);
+    border-color: var(--border-strong);
+    background: var(--surface-raised);
+    transform: translateY(-1px);
+  }
+
+  .admin-header button.admin-theme-toggle svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
   /* Layout: single column on phones, rail + content from 1024px */
   .admin-layout {
     @apply flex;
