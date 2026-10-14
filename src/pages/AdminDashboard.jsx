@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AdminContentManager from '../components/AdminContentManager';
+import AdminMessages from '../components/AdminMessages';
 import ThemeToggle from '../components/ThemeToggle';
 
 const sections = [
+  { id: 'messages', label: 'Messages', icon: 'M3 7l9 6 9-6M4 6h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z' },
   { id: 'projects', label: 'Projects', icon: 'M3 7l9-4 9 4-9 4-9-4zm0 5l9 4 9-4M3 17l9 4 9-4' },
   { id: 'blogs', label: 'Blog posts', icon: 'M4 5h16v14H4zM8 9h8M8 13h8M8 17h5' },
   { id: 'videos', label: 'YouTube videos', icon: 'M3 8h18v11H3zM10 9l5 4.5L10 18z' },
@@ -174,7 +176,9 @@ const AdminDashboard = ({ token, onLogout }) => {
         </aside>
 
         <main className="admin-main">
-          <AdminContentManager token={token} type={activeSection} />
+          {activeSection === 'messages'
+            ? <AdminMessages token={token} />
+            : <AdminContentManager token={token} type={activeSection} />}
         </main>
       </div>
     </div>

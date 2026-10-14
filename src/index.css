@@ -1339,6 +1339,206 @@
     color: var(--muted);
   }
 
+  /* ---------- Admin studio: contact messages ---------- */
+  .admin-messages {
+    @apply mx-auto w-full;
+    max-width: 64rem;
+  }
+
+  .admin-message-heading-actions {
+    @apply flex items-center gap-2 shrink-0;
+  }
+
+  .admin-message-filters {
+    @apply flex flex-wrap gap-2 mb-4;
+  }
+
+  .admin-message-filters button {
+    @apply rounded-lg text-xs font-medium px-3 transition-colors;
+    min-height: 2.25rem;
+    color: var(--muted);
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+  }
+
+  .admin-message-filters button:hover {
+    color: var(--foreground);
+    border-color: var(--border-strong);
+  }
+
+  .admin-message-filters button.is-active {
+    color: var(--accent-strong);
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+
+  .admin-messages-layout {
+    @apply grid gap-4;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    .admin-messages-layout {
+      grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    }
+  }
+
+  .admin-message-list {
+    @apply rounded-2xl border overflow-hidden;
+    background: var(--card-bg);
+    border-color: var(--border);
+  }
+
+  .admin-message-list-scroll {
+    @apply overflow-y-auto;
+    max-height: 36rem;
+  }
+
+  .admin-message-list-empty {
+    @apply px-4 py-10 text-center text-sm;
+    color: var(--subtle);
+  }
+
+  .admin-message-item {
+    @apply block w-full text-left px-4 py-3 transition-colors;
+    border-bottom: 1px solid var(--border);
+    color: var(--foreground);
+  }
+
+  .admin-message-item:last-child {
+    border-bottom: 0;
+  }
+
+  .admin-message-item:hover {
+    background: var(--surface-soft);
+  }
+
+  .admin-message-item.is-selected {
+    background: var(--surface-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  .admin-message-item-top {
+    @apply flex items-center justify-between gap-2;
+  }
+
+  .admin-message-item-name {
+    @apply text-sm truncate;
+  }
+
+  .admin-message-item.is-unread .admin-message-item-name {
+    font-weight: 600;
+  }
+
+  .admin-message-item-subject {
+    @apply text-xs truncate mt-0.5;
+    color: var(--muted);
+  }
+
+  .admin-message-item-email {
+    @apply text-xs truncate mt-0.5;
+    color: var(--accent);
+  }
+
+  .admin-message-item-date {
+    @apply text-[11px] mt-1;
+    color: var(--subtle);
+  }
+
+  .admin-message-dot {
+    @apply w-2 h-2 rounded-full shrink-0;
+    background: var(--accent);
+  }
+
+  .admin-message-detail {
+    @apply rounded-2xl border;
+    background: var(--card-bg);
+    border-color: var(--border);
+    min-height: 20rem;
+  }
+
+  .admin-message-detail-head {
+    @apply p-4 sm:p-5 flex flex-col gap-3;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .admin-message-detail-title {
+    @apply font-heading text-lg font-bold break-words;
+    color: var(--foreground);
+  }
+
+  .admin-message-meta {
+    @apply flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mt-1.5;
+    color: var(--muted);
+  }
+
+  .admin-message-meta .admin-message-email {
+    color: var(--accent);
+    word-break: break-all;
+  }
+
+  .admin-message-actions {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .admin-message-actions button,
+  .admin-message-actions a {
+    @apply inline-flex items-center rounded-lg text-xs font-medium transition-colors;
+    min-height: 2.25rem;
+    padding: 0.375rem 0.75rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .admin-message-actions button:hover:not(:disabled),
+  .admin-message-actions a:hover {
+    color: var(--accent);
+    border-color: var(--border-strong);
+  }
+
+  .admin-message-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .admin-message-body {
+    @apply p-4 sm:p-5 text-sm whitespace-pre-wrap;
+    color: var(--foreground);
+    line-height: 1.7;
+  }
+
+  .admin-message-placeholder {
+    @apply h-full grid place-items-center text-center px-6 py-16;
+    color: var(--subtle);
+  }
+
+  .admin-message-placeholder svg {
+    @apply mx-auto mb-3;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--border-strong);
+  }
+
+  .admin-status-badge {
+    @apply rounded-full text-[10px] font-medium px-2 py-0.5 uppercase tracking-wide shrink-0;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .admin-status-badge.is-new {
+    color: var(--accent-strong);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .admin-status-badge.is-replied {
+    color: #2f6b4f;
+    border-color: rgba(47, 107, 79, 0.35);
+    border-color: color-mix(in srgb, #2f6b4f 35%, transparent);
+    background: rgba(47, 107, 79, 0.1);
+    background: color-mix(in srgb, #2f6b4f 10%, transparent);
+  }
+
   /* ---------- Admin login ---------- */
   .admin-login-shell {
     @apply min-h-screen grid place-items-center px-4;
