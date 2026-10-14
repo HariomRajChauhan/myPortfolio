@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 
 const Education = () => {
   const highlights = [
-    'Currently in 3rd Year, 2nd Part (Semester 6)',
-    'Software Engineering Minor Project: AI-based Crop Disease Detection',
-    'Technical documentation using LaTeX for project proposals and reports',
-    'Active member of ACES (Association of Computer Engineering Students)',
+    'Third year, second part (Semester 6)',
+    'Minor project: AI-based crop disease detection',
+    'Write project proposals and reports in LaTeX',
+    'Active member of ACES',
   ];
 
   return (

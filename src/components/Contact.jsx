@@ -12,7 +12,7 @@ const Contact = () => {
   const [status, setStatus] = useState({ type: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const contactEmail = 'hariom.chauhan@example.com';
+  const contactEmail = 'chauhanhariomraj7@gmail.com';
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -115,7 +115,7 @@ const Contact = () => {
           </h2>
           <div className="section-divider" />
           <p className="text-dark-400 font-body mt-4 max-w-xl">
-            Currently seeking internship or junior roles in full-stack development, AI/ML, or UI/UX design.
+            Open to internships and junior roles in full-stack development, AI/ML, or UI/UX design.
           </p>
         </motion.div>
 
@@ -129,8 +129,8 @@ const Contact = () => {
             className="lg:col-span-2"
           >
             <p className="text-dark-300 font-body text-sm leading-relaxed mb-8">
-              Whether you have a question, want to discuss a project, or are looking for a passionate 
-              developer to join your team, I'd love to hear from you.
+              Have a role or a project in mind? Send a message below, or email me directly at{' '}
+              <a href={`mailto:${contactEmail}`} className="text-accent-primary hover:text-accent-tertiary transition-colors">{contactEmail}</a>.
             </p>
 
             {/* Contact Links */}

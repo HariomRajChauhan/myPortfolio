@@ -61,25 +61,25 @@ const About = () => {
               Hi, I'm Hariom Raj Chauhan
             </h3>
             <p className="text-accent-primary text-sm font-body mb-6">
-              Everyone calls me <span className="font-medium">Harry</span>
+              I go by <span className="font-medium">Harry</span>
             </p>
             
             <div className="space-y-4 text-dark-300 font-body leading-relaxed mb-8">
               <p>
-                I'm a <span className="text-white font-medium">3rd year Computer Engineering student</span> at 
-                <span className="text-white font-medium"> IOE Purwanchal Campus</span>, Dharan, Nepal. 
-                What sets me apart is my unique blend of software engineering skills and creative design background.
+                I'm a <span className="text-white font-medium">third-year Computer Engineering student</span> at
+                <span className="text-white font-medium"> IOE Purwanchal Campus</span> in Dharan, Nepal. I split my
+                time between code and design: I build full-stack apps with React and Node.js, and design their
+                interfaces in Figma.
               </p>
               <p>
-                As the <span className="text-white font-medium">Technical Manager at ACES</span>, I've led technical 
-                initiatives while also serving as <span className="text-white font-medium">Graphics Lead for Taranga</span>, 
-                a national-level tech fest, managing all visual design aspects.
+                At ACES I serve as <span className="text-white font-medium">Technical Manager</span> and spent about
+                two years as a <span className="text-white font-medium">graphics designer</span>. I also led visual
+                design for <span className="text-white font-medium">Taranga</span>, a national tech fest, and taught a
+                C++ workshop for first-year students.
               </p>
               <p>
-                I'm seeking an <span className="text-accent-primary font-medium">internship or junior role</span> in 
-                full-stack development, AI/ML engineering, or UI/UX design. My dual expertise in both 
-                technical implementation and visual design positions me to create products that are 
-                functional and delightful to use.
+                I'm looking for an <span className="text-accent-primary font-medium">internship or junior role</span> in
+                full-stack development, AI/ML, or UI/UX design — where I can ship software and make it easy to use.
               </p>
             </div>
 

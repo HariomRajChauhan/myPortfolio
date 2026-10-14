@@ -7,19 +7,19 @@ import PageTransition from '../components/PageTransition';
 const workAreas = [
   {
     title: 'Projects',
-    description: 'AI, systems, mobile, and full-stack experiments built to solve real problems.',
+    description: 'Apps, systems, and machine learning projects I have built.',
     to: '/works/projects',
     icon: '01',
   },
   {
     title: 'Experience',
-    description: 'Technical leadership, visual direction, and collaborative work in student communities.',
+    description: 'Leadership and design roles at ACES and Taranga.',
     to: '/works/experience',
     icon: '02',
   },
   {
     title: 'Skills',
-    description: 'A practical toolkit across engineering, product design, communication, and AI.',
+    description: 'The languages, frameworks, and design tools I use.',
     to: '/works/skills',
     icon: '03',
   },

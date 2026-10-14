@@ -12,7 +12,7 @@ const Projects = () => {
     {
       _id: '1',
       title: 'Smart Multi-Crop Disease Detection & Yield Prediction',
-      description: 'AI-powered system using CNN for disease detection and LSTM for yield prediction. Full SRS/DFD/UML documentation in LaTeX.',
+      description: 'Detects crop disease from leaf images and predicts yield. A CNN classifier plus an LSTM model, with the full SRS, DFD, and UML documented in LaTeX.',
       techStack: ['Python', 'CNN', 'LSTM', 'TensorFlow', 'LaTeX'],
       github: 'https://github.com/HariomRajChauhan',
       liveDemo: null,
@@ -21,7 +21,7 @@ const Projects = () => {
     {
       _id: '2',
       title: 'TCP-Based Web Server (WEB_server)',
-      description: 'Framework-free HTTP server built in C++17 with socket and server abstraction layers. Deep networking fundamentals.',
+      description: 'A working HTTP server written from scratch in C++17 — a TCP socket layer and server abstraction that serves HTTP without a framework.',
       techStack: ['C++17', 'TCP/IP', 'Sockets', 'HTTP'],
       github: 'https://github.com/HariomRajChauhan/WEB_server',
       liveDemo: null,
@@ -30,7 +30,7 @@ const Projects = () => {
     {
       _id: '3',
       title: 'Feelings - React Native App',
-      description: 'Mobile application built with React Native for expressing and tracking emotions.',
+      description: 'A React Native app for logging and tracking emotions over time.',
       techStack: ['React Native', 'JavaScript', 'Mobile'],
       github: 'https://github.com/HariomRajChauhan',
       liveDemo: null,
@@ -39,7 +39,7 @@ const Projects = () => {
     {
       _id: '4',
       title: 'Exe_Cleaner',
-      description: 'Utility project for cleaning and managing executable files efficiently.',
+      description: 'A C++ command-line tool that finds and removes stale executables.',
       techStack: ['C++', 'System Programming'],
       github: 'https://github.com/HariomRajChauhan',
       liveDemo: null,
@@ -48,7 +48,7 @@ const Projects = () => {
     {
       _id: '5',
       title: 'Personal Portfolio (This Site)',
-      description: 'Full-stack MERN portfolio with JWT-authenticated admin API, deployed on Netlify + Render.',
+      description: 'A MERN portfolio with a JWT-authenticated admin API, deployed on Netlify and Render.',
       techStack: ['React', 'Node.js', 'Express', 'MongoDB', 'JWT', 'TailwindCSS'],
       github: 'https://github.com/HariomRajChauhan',
       liveDemo: 'https://hariomchauhan.com.np',
@@ -112,7 +112,7 @@ const Projects = () => {
           </h2>
           <div className="section-divider" />
           <p className="text-dark-400 font-body mt-4 max-w-xl">
-            A showcase spanning AI/ML, systems programming, mobile development, and full-stack web applications.
+            Selected apps, systems, and AI projects — with source on GitHub.
           </p>
         </motion.div>
 

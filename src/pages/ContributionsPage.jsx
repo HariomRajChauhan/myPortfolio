@@ -9,22 +9,22 @@ const fallbackContributions = [
   {
     title: 'Technical Management at ACES',
     type: 'Leadership',
-    description: 'Driving technical initiatives for the Association of Computer Engineering Students and helping create practical opportunities for peers.',
+    description: 'Lead technical initiatives for the Association of Computer Engineering Students and organise practical opportunities for peers.',
   },
   {
     title: 'Taranga: The Wave of Technology',
     type: 'Creative Direction',
-    description: 'Led visual direction for a national-level technology festival, bringing consistency to its event identity and campaign materials.',
+    description: 'Led visual direction for a national-level tech festival, keeping its event identity and campaign materials consistent.',
   },
   {
     title: 'C++ Guidance Workshop',
     type: 'Teaching',
-    description: 'Prepared a starter-friendly session, slides, and resources to help first-year engineering students begin programming confidently.',
+    description: 'Ran a beginner-friendly C++ session and wrote the slides and resources for first-year engineering students.',
   },
   {
     title: 'Open-source practice',
     type: 'Development',
-    description: 'I publish project work and learn in public through GitHub, with an emphasis on readable code and useful documentation.',
+    description: 'I publish project work on GitHub, focusing on readable code and clear documentation.',
   },
 ];
 

@@ -42,7 +42,7 @@ const Footer = () => {
       links: [
         { label: 'GitHub', href: 'https://github.com/HariomRajChauhan' },
         { label: 'LinkedIn', href: 'https://linkedin.com/in/hariomrajchauhan' },
-        { label: 'Gmail', href: 'mailto:hariom.chauhan@example.com' },
+        { label: 'Gmail', href: 'mailto:chauhanhariomraj7@gmail.com' },
       ],
     },
   ];
@@ -54,7 +54,7 @@ const Footer = () => {
       <div className="container-width footer-layout">
         <div className="footer-intro">
           <Link to="/" className="footer-wordmark">Hariom</Link>
-          <p>Computer engineering student building useful, considered digital experiences.</p>
+          <p>Computer Engineering student building full-stack web apps and designing their interfaces.</p>
         </div>
 
         <div className="footer-columns">

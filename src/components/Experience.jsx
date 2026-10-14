@@ -6,28 +6,40 @@ const Experience = () => {
       title: 'Technical Manager',
       organization: 'ACES (Association of Computer Engineering Students)',
       period: 'Current',
-      description: 'Leading technical initiatives and managing engineering projects for the computer engineering student association.',
+      points: [
+        'Lead technical initiatives and engineering projects for the department association.',
+        'Organise technical programs and events for computer engineering students.',
+      ],
       type: 'leadership',
     },
     {
       title: 'Graphics Designer',
       organization: 'ACES (Association of Computer Engineering Students)',
       period: '~2 years',
-      description: 'Created visual content, marketing materials, and brand assets for student events. Developed strong design sensibility while collaborating with technical teams.',
+      points: [
+        'Designed posters, marketing material, and brand assets for student events.',
+        'Worked with event and technical teams to keep every campaign on-brand.',
+      ],
       type: 'design',
     },
     {
       title: 'Graphics Lead',
       organization: 'Taranga: The Wave of Technology',
       period: 'National Tech Fest',
-      description: 'Led all visual design aspects for a national-level technology festival, managing a team of designers and ensuring cohesive branding across platforms.',
+      points: [
+        'Led all visual design for a national-level technology festival.',
+        'Kept event identity and campaign materials consistent across platforms.',
+      ],
       type: 'design',
     },
     {
       title: 'C++ Workshop Instructor',
       organization: 'IOE Purwanchal Campus',
       period: 'Workshop',
-      description: 'Organized and conducted a C++ guidance session for 1st-year students, including creating proposal templates, slide decks, and guidelines handouts.',
+      points: [
+        'Ran a C++ workshop for first-year students.',
+        'Wrote the proposal, slide deck, and guidelines handout.',
+      ],
       type: 'teaching',
     },
   ];
@@ -143,7 +155,14 @@ const Experience = () => {
                         <span className="text-xs text-dark-500 font-body">{exp.period}</span>
                       </div>
                     </div>
-                    <p className="text-dark-400 text-sm font-body leading-relaxed">{exp.description}</p>
+                    <ul className="space-y-1.5">
+                      {exp.points.map((point) => (
+                        <li key={point} className="flex items-start gap-2.5 text-dark-400 text-sm font-body leading-relaxed">
+                          <span className="mt-2 w-1 h-1 rounded-full bg-accent-primary/60 flex-shrink-0" aria-hidden="true" />
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 </motion.div>
               );

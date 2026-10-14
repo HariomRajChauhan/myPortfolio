@@ -23,10 +23,10 @@ const Header = () => {
   }, [location.pathname]);
 
   const worksLinks = [
-    { number: '01', name: 'Projects', to: '/works/projects', description: 'Selected work and case studies.' },
-    { number: '02', name: 'Experience', to: '/works/experience', description: 'Professional journey and milestones.' },
-    { number: '03', name: 'Skills', to: '/works/skills', description: 'Tech I work with.' },
-    { number: '04', name: 'Contributions', to: '/works/contributions', description: 'Open-source and GitHub activity.' },
+    { number: '01', name: 'Projects', to: '/works/projects', description: 'Apps, systems, and AI projects.' },
+    { number: '02', name: 'Experience', to: '/works/experience', description: 'Leadership and design roles.' },
+    { number: '03', name: 'Skills', to: '/works/skills', description: 'Languages, frameworks, and tools.' },
+    { number: '04', name: 'Contributions', to: '/works/contributions', description: 'Workshops, events, and community work.' },
   ];
 
   const navLinkClass = ({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`;
@@ -62,7 +62,7 @@ const Header = () => {
                 aria-expanded={isWorksOpen}
                 aria-haspopup="menu"
               >
-                Works
+                Work
                 <svg className={`w-3.5 h-3.5 transition-transform ${isWorksOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="m6 9 6 6 6-6" />
                 </svg>
@@ -136,7 +136,7 @@ const Header = () => {
                   className={`nav-link w-full justify-between ${worksActive ? 'nav-link-active' : ''}`}
                   onClick={() => setIsMobileWorksOpen((open) => !open)}
                 >
-                  Works
+                  Work
                   <svg className={`w-3.5 h-3.5 transition-transform ${isMobileWorksOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="m6 9 6 6 6-6" />
                   </svg>

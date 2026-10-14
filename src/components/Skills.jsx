@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 const Skills = () => {
   const skillCategories = [
     {
-      title: 'Development',
-      description: 'Building robust applications',
+      title: 'Frontend',
+      description: 'Interfaces people use',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
@@ -12,22 +12,35 @@ const Skills = () => {
       ),
       color: 'from-accent-primary to-accent-blue',
       borderColor: 'border-accent-primary/20',
-      skills: [
-        { name: 'C++', level: 90 },
-        { name: 'JavaScript', level: 85 },
-        { name: 'React', level: 80 },
-        { name: 'React Native', level: 70 },
-        { name: 'Node.js / Express', level: 75 },
-        { name: 'MongoDB', level: 75 },
-        { name: 'MERN Stack', level: 75 },
-        { name: 'TCP / Socket', level: 70 },
-        { name: 'Python', level: 65 },
-        { name: 'CNN / LSTM (AI)', level: 60 },
-      ],
+      skills: ['React', 'React Native', 'JavaScript', 'Tailwind CSS'],
+    },
+    {
+      title: 'Backend',
+      description: 'APIs, data, and systems',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 4h14a2 2 0 012 2v3a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2zm0 9h14a2 2 0 012 2v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 012-2zM7 7h.01M7 16h.01" />
+        </svg>
+      ),
+      color: 'from-accent-secondary to-pink-500',
+      borderColor: 'border-accent-secondary/20',
+      skills: ['Node.js', 'Express', 'MongoDB', 'REST APIs', 'C++17', 'TCP/IP sockets'],
+    },
+    {
+      title: 'AI/ML',
+      description: 'Models and data work',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 3v2M15 3v2M9 19v2M15 19v2M3 9h2M3 15h2M19 9h2M19 15h2M6 6h12v12H6zM10 10h4v4h-4z" />
+        </svg>
+      ),
+      color: 'from-accent-emerald to-teal-500',
+      borderColor: 'border-accent-emerald/20',
+      skills: ['Python', 'TensorFlow', 'CNN', 'LSTM'],
     },
     {
       title: 'Design',
-      description: 'Crafting visual experiences',
+      description: 'Visual and product design',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
@@ -35,17 +48,11 @@ const Skills = () => {
       ),
       color: 'from-accent-secondary to-pink-500',
       borderColor: 'border-accent-secondary/20',
-      skills: [
-        { name: 'Figma (UI/UX)', level: 85 },
-        { name: 'Adobe Photoshop', level: 80 },
-        { name: 'Adobe InDesign', level: 75 },
-        { name: 'Canva', level: 90 },
-        { name: 'Design Theory', level: 80 },
-      ],
+      skills: ['Figma', 'Adobe Photoshop', 'Adobe InDesign', 'Canva', 'Design fundamentals'],
     },
     {
-      title: 'Other',
-      description: 'Complementary expertise',
+      title: 'Tools',
+      description: 'Day-to-day workflow',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -53,16 +60,11 @@ const Skills = () => {
       ),
       color: 'from-accent-emerald to-teal-500',
       borderColor: 'border-accent-emerald/20',
-      skills: [
-        { name: 'Video Editing', level: 70 },
-        { name: 'Social Media Mgmt', level: 75 },
-        { name: 'LaTeX', level: 80 },
-        { name: 'Technical Writing', level: 75 },
-      ],
+      skills: ['Git', 'LaTeX', 'Technical writing', 'Video editing'],
     },
   ];
 
-  const techStack = ['React', 'Node.js', 'Express', 'MongoDB', 'C++', 'Python', 'Figma', 'Photoshop', 'Git', 'TCP/IP', 'LaTeX', 'REST API'];
+  const techStack = ['React', 'Node.js', 'Express', 'MongoDB', 'C++', 'Python', 'TensorFlow', 'Figma', 'Photoshop', 'Git', 'LaTeX', 'REST API'];
 
   return (
     <section id="skills" className="section-padding relative">
@@ -105,23 +107,14 @@ const Skills = () => {
               </div>
 
               {/* Skills List */}
-              <div className="space-y-3 mt-5">
-                {category.skills.map((skill, skillIndex) => (
-                  <div key={skill.name}>
-                    <div className="flex justify-between mb-1.5">
-                      <span className="text-sm text-dark-300 font-body">{skill.name}</span>
-                      <span className="text-xs text-dark-500 font-body tabular-nums">{skill.level}%</span>
-                    </div>
-                    <div className="h-1 bg-dark-800 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${skill.level}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1, delay: 0.2 + skillIndex * 0.05, ease: 'easeOut' }}
-                        className={`h-full bg-gradient-to-r ${category.color} rounded-full`}
-                      />
-                    </div>
-                  </div>
+              <div className="flex flex-wrap gap-2 mt-5">
+                {category.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="px-2.5 py-1 text-xs font-body text-dark-300 border border-white/[0.06] rounded-lg bg-white/[0.02] hover:bg-white/[0.05] hover:border-accent-primary/20 transition-all duration-300"
+                  >
+                    {skill}
+                  </span>
                 ))}
               </div>
             </motion.div>
