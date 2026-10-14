@@ -29,7 +29,8 @@ router.get('/', protect, async (req, res) => {
       contacts,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(`[adminAnalytics] Failed to load analytics: ${error.message}`);
+    res.status(500).json({ message: 'Unable to load analytics' });
   }
 });
 

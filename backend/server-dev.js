@@ -8,12 +8,22 @@ import bcrypt from 'bcryptjs';
 // Load env vars
 dotenv.config();
 
+// Hard guard: this file must never serve traffic in production. Use server.js.
+if (process.env.NODE_ENV === 'production') {
+  console.error('[server-dev] This server is for local development only. Use server.js in production.');
+  process.exit(1);
+}
+
 const app = express();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('[server-dev] JWT_SECRET is required. Set it in backend/.env');
+  process.exit(1);
+}
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
@@ -185,22 +195,18 @@ let experience = [
   }
 ];
 
-// Mock admin (in production, this would be in MongoDB)
-let admin = {
-  _id: '1',
-  username: 'admin',
-  password: bcrypt.hashSync('admin123', 10)
-};
+// Mock admin — credentials must be set via env or the first POST /api/auth/register call.
+let admin = null;
 
-// Auth middleware for dev
+// Auth middleware for dev — verifies JWT signature (unlike the previous no-op).
 const protect = (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }
-    // For dev, just check if token exists (not validating signature)
-    req.admin = { id: '1' };
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.admin = { id: decoded.id };
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid token' });
@@ -271,15 +277,18 @@ app.post('/api/resume', (req, res) => {
   res.json({ downloadCount: resumeData.downloadCount, filePath: resumeData.filePath });
 });
 
-// Contact form (log to console and store)
+// Contact form (log notification only, not the full body)
 app.post('/api/contact', (req, res) => {
   const newContact = {
     _id: Date.now().toString(),
-    ...req.body,
+    name: String(req.body.name || '').slice(0, 100),
+    email: String(req.body.email || '').slice(0, 254),
+    subject: String(req.body.subject || '').slice(0, 160),
+    message: String(req.body.message || '').slice(0, 5000),
     createdAt: new Date()
   };
   contacts.push(newContact);
-  console.log('📩 New contact form submission:', req.body);
+  console.log('[dev] New contact form submission received');
   res.status(201).json({ message: 'Contact form submitted successfully' });
 });
 
@@ -467,12 +476,12 @@ app.use((req, res) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running in DEVELOPMENT MODE (no database) on port ${PORT}`);
+  console.log(`Server running in DEVELOPMENT MODE (no database) on port ${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/api/health`);
   console.log(`   Projects: http://localhost:${PORT}/api/projects`);
   console.log(`   Admin login: POST http://localhost:${PORT}/api/auth/login`);
-  console.log(`   ⚠️  Data is stored in memory and will reset on restart`);
-  console.log(`   📝 Default admin: admin / admin123`);
+  console.log(`   Data is stored in memory and will reset on restart`);
+  if (!admin) console.log(`   Register first: POST /api/auth/register { username, password }`);
 });
 
 export default app;

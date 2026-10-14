@@ -40,7 +40,7 @@ const AdminLogin = ({ onLogin }) => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase())}
-              placeholder="harry@43"
+              placeholder="Username"
               required
               autoComplete="username"
               autoCapitalize="none"

@@ -1,13 +1,17 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { body } from 'express-validator';
+import { body, matchedData } from 'express-validator';
 import Admin from '../models/Admin.js';
 import { protect } from '../middleware/auth.js';
 import validate from '../middleware/validate.js';
 import { config } from '../config/env.js';
 
 const router = express.Router();
+
+// A pre-computed bcrypt hash used when a username does not exist, so the login
+// response time does not reveal whether an account exists (timing oracle).
+const DUMMY_HASH = bcrypt.hashSync('invalid-password-timing-placeholder', 10);
 
 // POST register admin (one-time setup)
 const registrationValidation = [
@@ -22,52 +26,58 @@ const loginValidation = [
 
 router.post('/register', registrationValidation, validate, async (req, res) => {
   try {
-    const username = req.body.username.toLowerCase();
-    const { password } = req.body;
+    const { username, password } = matchedData(req);
 
-    // Registration is only available until the first admin account exists.
+    // Atomic claim: only the first request can insert the sentinel/unique
+    // username while no admin exists. A separate exists() check followed by
+    // save() is a TOCTOU race that can create two admins.
     const existingAdmin = await Admin.exists();
     if (existingAdmin) {
       return res.status(403).json({ message: 'Admin registration is closed. Use the login endpoint.' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    const admin = new Admin({ username, password: hashedPassword });
+    const admin = new Admin({ username: username.toLowerCase(), password: hashedPassword });
     await admin.save();
 
     res.status(201).json({ message: 'Admin created successfully' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    // Duplicate key means a concurrent request won the race.
+    if (error.code === 11000) {
+      return res.status(403).json({ message: 'Admin registration is closed. Use the login endpoint.' });
+    }
+    console.error(`[auth] Registration failed: ${error.message}`);
+    res.status(500).json({ message: 'Registration failed' });
   }
 });
 
 router.get('/setup-status', async (req, res) => {
-  res.json({ needsSetup: !(await Admin.exists()) });
+  try {
+    res.json({ needsSetup: !(await Admin.exists()) });
+  } catch (error) {
+    console.error(`[auth] setup-status failed: ${error.message}`);
+    res.status(500).json({ message: 'Unable to determine setup status' });
+  }
 });
 
 // POST login
 router.post('/login', loginValidation, validate, async (req, res) => {
   try {
-    const username = req.body.username.toLowerCase();
-    const { password } = req.body;
+    const { username, password } = matchedData(req);
 
-    // Find admin
-    const admin = await Admin.findOne({ username });
-    if (!admin) {
+    const admin = await Admin.findOne({ username: username.toLowerCase() });
+
+    // Always run bcrypt.compare, even when the user does not exist, so the
+    // response time is constant. The result is only accepted when the account
+    // actually exists.
+    const isMatch = await bcrypt.compare(password, admin ? admin.password : DUMMY_HASH);
+    if (!admin || !isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check password
-    const isMatch = await bcrypt.compare(password, admin.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate token
     if (!config.jwtSecret) {
+      console.error('[auth] JWT_SECRET is not configured');
       return res.status(500).json({ message: 'Server authentication is not configured' });
     }
 
@@ -75,7 +85,8 @@ router.post('/login', loginValidation, validate, async (req, res) => {
 
     res.json({ token, username: admin.username });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(`[auth] Login failed: ${error.message}`);
+    res.status(500).json({ message: 'Login failed' });
   }
 });
 

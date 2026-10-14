@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, matchedData } from 'express-validator';
 import Blog from '../models/Blog.js';
 import Community from '../models/Community.js';
 import Contribution from '../models/Contribution.js';
@@ -48,37 +48,42 @@ const blogValidation = [
 
 const idValidation = [param('id').isMongoId(), validate];
 
+const PUBLIC_LIST_LIMIT = 200;
+
 router.get('/contributions', asyncHandler(async (req, res) => {
-  const items = await Contribution.find({ published: true }).sort({ order: 1, createdAt: -1 });
+  const items = await Contribution.find({ published: true }).sort({ order: 1, createdAt: -1 }).limit(PUBLIC_LIST_LIMIT);
   res.json(items);
 }));
 
 router.get('/community', asyncHandler(async (req, res) => {
-  const items = await Community.find({ published: true }).sort({ order: 1, createdAt: -1 });
+  const items = await Community.find({ published: true }).sort({ order: 1, createdAt: -1 }).limit(PUBLIC_LIST_LIMIT);
   res.json(items);
 }));
 
 router.get('/blogs', asyncHandler(async (req, res) => {
   const items = await Blog.find({ published: true })
     .select('-content')
-    .sort({ publishedAt: -1, createdAt: -1 });
+    .sort({ publishedAt: -1, createdAt: -1 })
+    .limit(PUBLIC_LIST_LIMIT);
   res.json(items);
 }));
 
 router.get('/blogs/:slug', asyncHandler(async (req, res) => {
-  const item = await Blog.findOne({ slug: req.params.slug, published: true });
+  // Cast to string so an object (e.g. { $ne: null }) can never reach the query.
+  const slug = String(req.params.slug);
+  const item = await Blog.findOne({ slug, published: true });
   if (!item) return res.status(404).json({ message: 'Blog post not found' });
   res.json(item);
 }));
 
 router.get('/admin/contributions', protect, asyncHandler(async (req, res) => {
-  res.json(await Contribution.find().sort({ order: 1, createdAt: -1 }));
+  res.json(await Contribution.find().sort({ order: 1, createdAt: -1 }).limit(PUBLIC_LIST_LIMIT));
 }));
 router.post('/admin/contributions', protect, contentValidation, validate, asyncHandler(async (req, res) => {
-  res.status(201).json(await Contribution.create(req.body));
+  res.status(201).json(await Contribution.create(matchedData(req)));
 }));
 router.put('/admin/contributions/:id', protect, param('id').isMongoId(), contentValidation, validate, asyncHandler(async (req, res) => {
-  const item = await Contribution.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const item = await Contribution.findByIdAndUpdate(req.params.id, matchedData(req), { new: true, runValidators: true });
   if (!item) return res.status(404).json({ message: 'Contribution not found' });
   res.json(item);
 }));
@@ -89,13 +94,13 @@ router.delete('/admin/contributions/:id', protect, idValidation, asyncHandler(as
 }));
 
 router.get('/admin/community', protect, asyncHandler(async (req, res) => {
-  res.json(await Community.find().sort({ order: 1, createdAt: -1 }));
+  res.json(await Community.find().sort({ order: 1, createdAt: -1 }).limit(PUBLIC_LIST_LIMIT));
 }));
 router.post('/admin/community', protect, communityValidation, validate, asyncHandler(async (req, res) => {
-  res.status(201).json(await Community.create(req.body));
+  res.status(201).json(await Community.create(matchedData(req)));
 }));
 router.put('/admin/community/:id', protect, param('id').isMongoId(), communityValidation, validate, asyncHandler(async (req, res) => {
-  const item = await Community.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const item = await Community.findByIdAndUpdate(req.params.id, matchedData(req), { new: true, runValidators: true });
   if (!item) return res.status(404).json({ message: 'Community entry not found' });
   res.json(item);
 }));
@@ -106,17 +111,18 @@ router.delete('/admin/community/:id', protect, idValidation, asyncHandler(async 
 }));
 
 router.get('/admin/blogs', protect, asyncHandler(async (req, res) => {
-  res.json(await Blog.find().sort({ updatedAt: -1 }));
+  res.json(await Blog.find().sort({ updatedAt: -1 }).limit(PUBLIC_LIST_LIMIT));
 }));
 router.post('/admin/blogs', protect, normalizeTags, blogValidation, validate, asyncHandler(async (req, res) => {
-  res.status(201).json(await Blog.create(req.body));
+  res.status(201).json(await Blog.create(matchedData(req)));
 }));
 router.put('/admin/blogs/:id', protect, param('id').isMongoId(), normalizeTags, blogValidation, validate, asyncHandler(async (req, res) => {
+  const data = matchedData(req);
   const item = await Blog.findById(req.params.id);
   if (!item) return res.status(404).json({ message: 'Blog post not found' });
-  Object.assign(item, req.body);
-  if (req.body.published === false) item.publishedAt = null;
-  if (req.body.published === true && !item.publishedAt) item.publishedAt = new Date();
+  Object.assign(item, data);
+  if (data.published === false) item.publishedAt = null;
+  if (data.published === true && !item.publishedAt) item.publishedAt = new Date();
   await item.save();
   res.json(item);
 }));

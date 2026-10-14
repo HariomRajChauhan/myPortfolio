@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, matchedData } from 'express-validator';
 import Contact from '../models/Contact.js';
 import { protect } from '../middleware/auth.js';
 import asyncHandler from '../middleware/asyncHandler.js';
@@ -14,12 +14,13 @@ const contactValidation = [
 ];
 
 router.post('/', contactValidation, validate, asyncHandler(async (req, res) => {
-  const contact = await Contact.create(req.body);
+  const data = matchedData(req);
+  const contact = await Contact.create(data);
   res.status(201).json({ success: true, message: 'Message sent successfully', id: contact.id });
 }));
 
 router.get('/', protect, asyncHandler(async (req, res) => {
-  res.json(await Contact.find().sort({ createdAt: -1 }));
+  res.json(await Contact.find().sort({ createdAt: -1 }).limit(500));
 }));
 
 router.patch('/:id/status', protect, param('id').isMongoId(), body('status').isIn(['new', 'read', 'replied']), validate, asyncHandler(async (req, res) => {

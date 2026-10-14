@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, matchedData } from 'express-validator';
 import Project from '../models/Project.js';
 import { protect } from '../middleware/auth.js';
 import asyncHandler from '../middleware/asyncHandler.js';
@@ -31,23 +31,23 @@ const projectValidation = [
 ];
 
 router.get('/', asyncHandler(async (req, res) => {
-  const projects = await Project.find().sort({ featured: -1, order: 1, createdAt: -1 });
+  const projects = await Project.find().sort({ featured: -1, order: 1, createdAt: -1 }).limit(200);
   res.json(projects.map(normalizeProject));
 }));
 
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', param('id').isMongoId(), validate, asyncHandler(async (req, res) => {
   const project = await Project.findById(req.params.id);
   if (!project) return res.status(404).json({ message: 'Project not found' });
   res.json(normalizeProject(project));
 }));
 
 router.post('/', protect, projectValidation, validate, asyncHandler(async (req, res) => {
-  const project = await Project.create(req.body);
+  const project = await Project.create(matchedData(req));
   res.status(201).json(normalizeProject(project));
 }));
 
 router.put('/:id', protect, param('id').isMongoId(), projectValidation, validate, asyncHandler(async (req, res) => {
-  const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const project = await Project.findByIdAndUpdate(req.params.id, matchedData(req), { new: true, runValidators: true });
   if (!project) return res.status(404).json({ message: 'Project not found' });
   res.json(normalizeProject(project));
 }));

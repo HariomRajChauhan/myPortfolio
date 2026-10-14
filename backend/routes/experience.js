@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, matchedData } from 'express-validator';
 import Experience from '../models/Experience.js';
 import { protect } from '../middleware/auth.js';
 import asyncHandler from '../middleware/asyncHandler.js';
@@ -20,15 +20,15 @@ const experienceValidation = [
 ];
 
 router.get('/', asyncHandler(async (req, res) => {
-  res.json(await Experience.find().sort({ current: -1, startDate: -1, order: 1 }));
+  res.json(await Experience.find().sort({ current: -1, startDate: -1, order: 1 }).limit(200));
 }));
 
 router.post('/', protect, experienceValidation, validate, asyncHandler(async (req, res) => {
-  res.status(201).json(await Experience.create(req.body));
+  res.status(201).json(await Experience.create(matchedData(req)));
 }));
 
 router.put('/:id', protect, param('id').isMongoId(), experienceValidation, validate, asyncHandler(async (req, res) => {
-  const experience = await Experience.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const experience = await Experience.findByIdAndUpdate(req.params.id, matchedData(req), { new: true, runValidators: true });
   if (!experience) return res.status(404).json({ message: 'Experience not found' });
   res.json(experience);
 }));

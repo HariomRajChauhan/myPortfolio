@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, matchedData } from 'express-validator';
 import Video from '../models/Video.js';
 import { protect } from '../middleware/auth.js';
 import asyncHandler from '../middleware/asyncHandler.js';
@@ -38,27 +38,29 @@ const videoValidation = [
 ];
 
 router.get('/', asyncHandler(async (req, res) => {
-  const videos = await Video.find().sort({ publishedAt: -1 });
+  const videos = await Video.find().sort({ publishedAt: -1 }).limit(200);
   res.json({ videos: videos.map(serializeVideo), channelUrl });
 }));
 
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', param('id').isMongoId(), validate, asyncHandler(async (req, res) => {
   const video = await Video.findById(req.params.id);
   if (!video) return res.status(404).json({ message: 'Video not found' });
   res.json(serializeVideo(video));
 }));
 
 router.post('/', protect, videoValidation, validate, asyncHandler(async (req, res) => {
-  const youtubeId = getYouTubeId(req.body.youtubeUrl);
+  const data = matchedData(req);
+  const youtubeId = getYouTubeId(data.youtubeUrl);
   if (!youtubeId) return res.status(422).json({ message: 'A valid YouTube video URL is required' });
-  const video = await Video.create({ ...req.body, youtubeId });
+  const video = await Video.create({ ...data, youtubeId });
   res.status(201).json(serializeVideo(video));
 }));
 
 router.put('/:id', protect, param('id').isMongoId(), videoValidation, validate, asyncHandler(async (req, res) => {
-  const youtubeId = getYouTubeId(req.body.youtubeUrl);
+  const data = matchedData(req);
+  const youtubeId = getYouTubeId(data.youtubeUrl);
   if (!youtubeId) return res.status(422).json({ message: 'A valid YouTube video URL is required' });
-  const video = await Video.findByIdAndUpdate(req.params.id, { ...req.body, youtubeId }, { new: true, runValidators: true });
+  const video = await Video.findByIdAndUpdate(req.params.id, { ...data, youtubeId }, { new: true, runValidators: true });
   if (!video) return res.status(404).json({ message: 'Video not found' });
   res.json(serializeVideo(video));
 }));

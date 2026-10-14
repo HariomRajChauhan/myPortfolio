@@ -15,7 +15,7 @@ const isObjectId = (value) => mongoose.Types.ObjectId.isValid(value);
 
 // Upload image (protected)
 router.post('/upload', protect, asyncHandler(async (req, res) => {
-  const { filename, data, contentType, size } = req.body;
+  const { filename, data, contentType } = req.body;
 
   if (!filename || !data || !contentType) {
     return res.status(400).json({ message: 'Missing required fields' });
@@ -31,7 +31,11 @@ router.post('/upload', protect, asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed' });
   }
 
-  if (Number(size) > MAX_SIZE_BYTES) {
+  // Measure the real decoded payload. The client-supplied `size` field is
+  // trivially spoofed and must never be trusted for the limit check.
+  const base64Payload = data.split(',')[1] || '';
+  const actualSize = Buffer.byteLength(base64Payload, 'base64');
+  if (actualSize > MAX_SIZE_BYTES) {
     return res.status(400).json({ message: 'File size exceeds 5MB limit' });
   }
 
@@ -40,7 +44,7 @@ router.post('/upload', protect, asyncHandler(async (req, res) => {
     const image = await Image.create({
       filename,
       contentType,
-      size: uploaded.bytes || Number(size),
+      size: uploaded.bytes || actualSize,
       provider: 'cloudinary',
       url: uploaded.url,
       publicId: uploaded.publicId,
@@ -63,7 +67,7 @@ router.post('/upload', protect, asyncHandler(async (req, res) => {
     filename,
     data,
     contentType,
-    size: Number(size),
+    size: actualSize,
     provider: 'mongodb',
     uploadedBy: req.admin.id
   });

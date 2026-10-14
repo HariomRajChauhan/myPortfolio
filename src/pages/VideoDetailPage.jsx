@@ -3,6 +3,17 @@ import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 import PageTransition from '../components/PageTransition';
 
+const ALLOWED_EMBED_HOSTS = ['www.youtube.com', 'www.youtube-nocookie.com', 'youtube.com'];
+
+const isSafeEmbedUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' && ALLOWED_EMBED_HOSTS.includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+};
+
 const VideoDetailPage = () => {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
@@ -30,12 +41,14 @@ const VideoDetailPage = () => {
             <>
               <p className="page-eyebrow">Tech HRCH · {new Date(video.publishedAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
               <h1>{video.title}</h1>
-              {video.embedUrl && (
+              {video.embedUrl && isSafeEmbedUrl(video.embedUrl) && (
                 <div className="video-player">
                   <iframe
                     src={video.embedUrl}
                     title={video.title}
+                    sandbox="allow-scripts allow-same-origin allow-presentation"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen
                   />
                 </div>

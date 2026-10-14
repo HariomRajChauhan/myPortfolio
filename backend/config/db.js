@@ -8,7 +8,8 @@ const connectDB = async () => {
 
   try {
     const conn = await mongoose.connect(config.mongoUri);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    // The host name is infrastructure detail; only surface it outside production.
+    console.log(config.isProduction ? 'MongoDB connected' : `MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error: ${error.message}`);
     throw error;

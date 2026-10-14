@@ -35,11 +35,18 @@ const app = express();
 // managed proxy, so exactly one hop of X-Forwarded-For is trusted.
 app.set('trust proxy', config.trustProxy);
 
-// Security headers. The API only ever returns JSON or binary images, so the
-// HTML-oriented CSP is disabled; CORP is relaxed so images can be embedded
-// from the Netlify origin.
+// Security headers. This is a JSON/binary API, so a locked-down CSP is safe:
+// no documents are ever served from here. CORP is relaxed so images can be
+// embedded from the Netlify origin.
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'none'"],
+      formAction: ["'none'"],
+    }
+  },
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
@@ -62,11 +69,15 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Authorization', 'Content-Type'],
-  maxAge: 86400
+  maxAge: 3600
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Image uploads carry base64 payloads, so they need a larger parser ceiling than
+// the rest of the API. Mounting it on the exact path means every other route
+// falls through to the 1mb parser below, which is a much smaller abuse surface.
+app.use('/api/images/upload', express.json({ limit: '8mb' }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Concise logs locally, standard combined logs in production for log drains.
 app.use(morgan(config.isProduction ? 'combined' : 'dev'));
@@ -116,7 +127,13 @@ app.use('/api/admin', protect, (req, res) => {
 });
 
 // Health check. Kept dependency-free so it stays fast when a monitor polls it.
+// In production it exposes only liveness so the response cannot be used to
+// fingerprint the environment or storage backend.
 app.get('/api/health', (req, res) => {
+  if (config.isProduction) {
+    return res.json({ status: 'OK' });
+  }
+
   res.json({
     status: 'OK',
     message: 'Portfolio API is running',

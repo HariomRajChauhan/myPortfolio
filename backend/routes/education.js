@@ -1,5 +1,5 @@
 import express from 'express';
-import { body, param } from 'express-validator';
+import { body, param, matchedData } from 'express-validator';
 import Education from '../models/Education.js';
 import { protect } from '../middleware/auth.js';
 import asyncHandler from '../middleware/asyncHandler.js';
@@ -20,15 +20,15 @@ const educationValidation = [
 ];
 
 router.get('/', asyncHandler(async (req, res) => {
-  res.json(await Education.find().sort({ expected: -1, startDate: -1, order: 1 }));
+  res.json(await Education.find().sort({ expected: -1, startDate: -1, order: 1 }).limit(200));
 }));
 
 router.post('/', protect, educationValidation, validate, asyncHandler(async (req, res) => {
-  res.status(201).json(await Education.create(req.body));
+  res.status(201).json(await Education.create(matchedData(req)));
 }));
 
 router.put('/:id', protect, param('id').isMongoId(), educationValidation, validate, asyncHandler(async (req, res) => {
-  const education = await Education.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const education = await Education.findByIdAndUpdate(req.params.id, matchedData(req), { new: true, runValidators: true });
   if (!education) return res.status(404).json({ message: 'Education entry not found' });
   res.json(education);
 }));

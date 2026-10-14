@@ -91,7 +91,14 @@ export const cloudinaryEnabled = Boolean(
 // unknown origins (server-to-server, CLI) are always allowed. Browser calls are
 // admitted only when the Origin matches an explicit entry or wildcard pattern.
 export const isOriginAllowed = (origin) => {
-  if (!origin) return true;
+  // No Origin header at all: this is a same-origin request (the normal case for
+  // the Netlify proxy) or a non-browser client, so CORS does not apply.
+  if (origin === undefined || origin === null || origin === '') return true;
+
+  // The literal "null" origin is sent by sandboxed iframes and file:// pages.
+  // It is never legitimate here and is rejected.
+  if (origin === 'null') return false;
+
   if (config.clientOrigins.length === 0) return true;
 
   const normalized = origin.replace(/\/$/, '');
