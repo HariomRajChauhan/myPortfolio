@@ -45,23 +45,14 @@ const isTokenValid = (token) => {
 };
 
 function App() {
-  const [loading, setLoading] = useState(true);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminToken, setAdminToken] = useState(null);
 
-  // Log visit when app loads
+  // Log visit in the background; it must never block the first paint.
   useEffect(() => {
-    const logVisit = async () => {
-      try {
-        await axios.post('/api/visit');
-      } catch (error) {
-        console.error('Failed to log visit:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    logVisit();
+    axios.post('/api/visit').catch((error) => {
+      console.error('Failed to log visit:', error);
+    });
 
     // Check for an existing, still-valid admin token
     const storedToken = localStorage.getItem('adminToken');
@@ -84,8 +75,6 @@ function App() {
     setAdminToken(null);
     setIsAdminLoggedIn(false);
   };
-
-  if (loading) return <LoadingSpinner />;
 
   return (
     <Router>
